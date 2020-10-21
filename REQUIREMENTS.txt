@@ -1,0 +1,6 @@
+---- TO BE DONE ----
+(Requirements needed to run the code)
+	+ Python libraries for example
+	+ Python version for example
+	+ Etc...
+---- TO BE DONE ----
