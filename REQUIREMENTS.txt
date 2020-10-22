@@ -4,3 +4,7 @@
 	+ Python version for example
 	+ Etc...
 ---- TO BE DONE ----
+
+* Working directory is assumed to be the project folder 'TDT4173-Project'
+* Libraries used:
+    numpy~=1.19.2
