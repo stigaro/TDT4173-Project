@@ -29,10 +29,10 @@ def load_simple_sentence_dataset():
     testing_data = load_raw_testing_data()
 
     training_x = np.array([np.array(row[4]) for row in training_data])
-    training_y = np.array([Extractor.string_label_to_integer_label(row[5]) for row in training_data])
+    training_y = np.array([Extractor.string_label_to_list_label(row[5]) for row in training_data])
 
     testing_x = np.array([np.array(row[4]) for row in testing_data])
-    testing_y = np.array([Extractor.string_label_to_integer_label(row[5]) for row in testing_data])
+    testing_y = np.array([Extractor.string_label_to_list_label(row[5]) for row in testing_data])
 
     dataset = {
         "train": np.array([(x, y) for x, y in zip(training_x, training_y)]),
@@ -52,10 +52,10 @@ def load_simple_word_dataset():
     testing_data = load_raw_testing_data()
 
     training_x = np.array([np.array(row[4].split()) for row in training_data])
-    training_y = np.array([Extractor.string_label_to_integer_label(row[5]) for row in training_data])
+    training_y = np.array([Extractor.string_label_to_list_label(row[5]) for row in training_data])
 
     testing_x = np.array([np.array(row[4].split()) for row in testing_data])
-    testing_y = np.array([Extractor.string_label_to_integer_label(row[5]) for row in testing_data])
+    testing_y = np.array([Extractor.string_label_to_list_label(row[5]) for row in testing_data])
 
     dataset = {
         "train": np.array([(x, y) for x, y in zip(training_x, training_y)]),

@@ -1,20 +1,20 @@
-def integer_label_to_string_label(label: int):
+def list_label_to_string_label(label: list):
     return {
-        -2: 'EXTREMELY NEGATIVE',
-        -1: 'NEGATIVE',
-        0: 'NEUTRAL',
-        1: 'POSITIVE',
-        2: 'EXTREMELY POSITIVE',
+        [1, 0, 0, 0, 0]: 'EXTREMELY NEGATIVE',
+        [0, 1, 0, 0, 0]: 'NEGATIVE',
+        [0, 0, 1, 0, 0]: 'NEUTRAL',
+        [0, 0, 0, 1, 0]: 'POSITIVE',
+        [0, 0, 0, 0, 1]: 'EXTREMELY POSITIVE',
     }[label]
 
 
-def string_label_to_integer_label(label: str):
+def string_label_to_list_label(label: str):
     return {
-        'EXTREMELY NEGATIVE': -2,
-        'NEGATIVE': -1,
-        'NEUTRAL': 0,
-        'POSITIVE': 1,
-        'EXTREMELY POSITIVE': 2,
+        'EXTREMELY NEGATIVE': [1, 0, 0, 0, 0],
+        'NEGATIVE': [0, 1, 0, 0, 0],
+        'NEUTRAL': [0, 0, 1, 0, 0],
+        'POSITIVE': [0, 0, 0, 1, 0],
+        'EXTREMELY POSITIVE': [0, 0, 0, 0, 1],
     }[label.upper()]
 
 
