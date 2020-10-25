@@ -16,3 +16,7 @@ def string_label_to_integer_label(label: str):
         'POSITIVE': 1,
         'EXTREMELY POSITIVE': 2,
     }[label.upper()]
+
+
+def get_max_length_from_list_of_string(string_list: list):
+    return max([len(string) for string in string_list])
