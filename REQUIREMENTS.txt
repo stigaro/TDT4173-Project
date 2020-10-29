@@ -8,3 +8,10 @@
 * Working directory is assumed to be the project folder 'TDT4173-Project'
 * Libraries used:
     - TODO -
+
+numpy
+pandas
+nltk
+sckikit-learn
+keras
+regex==2019.11.1
