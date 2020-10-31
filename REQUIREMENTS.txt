@@ -9,9 +9,12 @@
 * Libraries used:
     - TODO -
 
-numpy
-pandas
-nltk
-sckikit-learn
-keras
-regex==2019.11.1
+    numpy~=1.18.5
+    pandas
+    nltk~=3.5
+    sckikit-learn
+    keras~=2.4.3
+    regex==2019.11.1
+    scikit-learn~=0.23.2
+    tensorflow~=2.3.1
+matplotlib~=3.3.2
