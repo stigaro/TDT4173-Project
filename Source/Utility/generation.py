@@ -18,7 +18,7 @@ class Generator:
         model = keras.Sequential()
         model.add(keras.layers.Embedding(10000, 16, input_length=MAXIMUM_SENTENCE_LENGTH))
         model.add(keras.layers.GRU(64, dropout=0.2))
-        model.add(keras.layers.Dense(5, activation='sigmoid'))
+        model.add(keras.layers.Dense(5, activation='softmax'))
         return model
 
     @staticmethod

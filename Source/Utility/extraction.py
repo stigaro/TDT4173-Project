@@ -4,8 +4,10 @@ from nltk.probability import FreqDist
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.metrics import multilabel_confusion_matrix
 from keras.preprocessing import sequence
+from tensorflow.keras import activations
 
 from Source.Utility.loading import load_simple_sentence_dataset
+from Source.Utility.utility import softmax_output_to_list_label_by_maximum
 
 
 class WordExtractor(BaseEstimator, TransformerMixin):
@@ -64,48 +66,155 @@ class WordExtractor(BaseEstimator, TransformerMixin):
         return sequence.pad_sequences(clipped, maxlen=self.doclen)
 
 
-class ResultsExtractor:
+class SigmoidOutputResultsExtractor:
     """
 	Class that is initialized with a model which it uses to predict on the test data.
 	It can then be used to extract result measurements through accessing variables or running functions.
+	SHOULD ONLY BE USED WHEN THE LAST LAYER IS SIGMOID OUTPUT!
 	"""
     model = None
     test_x: np.ndarray = None
     test_y: np.ndarray = None
     predictions: np.ndarray = None
 
-    """
-    Initialization function to generate state containing dataset and model predictions
-    """
     def __init__(self, model_to_use):
+        """
+        Initialization function to generate state containing dataset and model predictions
+        """
+        # Safeguard against wrong output activations
+        if model_to_use.layers[-1].activation is not activations.sigmoid:
+            raise Exception
+
+        # Saves model in state, and loads dataset
         self.model = model_to_use
         ___, ___, self.test_x, self.test_y = load_simple_sentence_dataset()
+
+        # Extracts predictions on the test dataset
         self.predictions = self.model.predict(self.test_x)
 
-    """
-    Function that retrieves a touple of TPR and FPR arrays with 
-    values through all possible thresholds ranging from 0 -> 1. 
-    The returned arrays are ordered as the first index 
-    being a threshold of 0 and last being a threshold of 1
-    """
-    def retrieve_fpr_and_tpr_over_all_thresholds(self):
+    def retrieve_per_class_roc(self):
+        """
+        Function that retrieves a per-class list of touples containing TPR and FPR arrays
+        with values through all possible thresholds ranging from 0 -> 1.
+        The returned arrays are ordered as the first index
+        being a threshold of 0 and last being a threshold of 1.
+        """
         thresholds = np.linspace(0, 1, 100)
-        tpr = np.zeros(100, dtype=np.float32)
-        fpr = np.zeros(100, dtype=np.float32)
-        for index, threshold in enumerate(thresholds):
+        empty_array = np.zeros(100, dtype=np.float32)
+        class_list_of_tpr_and_fpr = [
+            (empty_array.copy(), empty_array.copy()),
+            (empty_array.copy(), empty_array.copy()),
+            (empty_array.copy(), empty_array.copy()),
+            (empty_array.copy(), empty_array.copy()),
+            (empty_array.copy(), empty_array.copy())
+        ]
+
+        for threshold_index, threshold in enumerate(thresholds):
             thresholded_predictions = np.array(self.predictions)
             thresholded_predictions[thresholded_predictions >= threshold] = 1.0
             thresholded_predictions[thresholded_predictions < threshold] = 0.0
 
-            tp = tn = fp = fn = 0
             confusion_matrixes = multilabel_confusion_matrix(self.test_y, thresholded_predictions)
-            for class_confusion_matrix in confusion_matrixes:
-                tn += class_confusion_matrix[0, 0]
-                fn += class_confusion_matrix[1, 0]
-                tp += class_confusion_matrix[1, 1]
-                fp += class_confusion_matrix[0, 1]
+            for class_number, class_confusion_matrix in enumerate(confusion_matrixes):
+                tn = class_confusion_matrix[0, 0]
+                fn = class_confusion_matrix[1, 0]
+                tp = class_confusion_matrix[1, 1]
+                fp = class_confusion_matrix[0, 1]
 
-            tpr[index] = tp / (tp + fn)
-            fpr[index] = fp / (fp + tn)
+                class_list_of_tpr_and_fpr[class_number][0][threshold_index] = tp / (tp + fn)
+                class_list_of_tpr_and_fpr[class_number][1][threshold_index] = fp / (fp + tn)
 
-        return tpr, fpr
+        return class_list_of_tpr_and_fpr
+
+
+class SoftmaxOutputResultsExtractor:
+    """
+	Class that is initialized with a model which it uses to predict on the test data.
+	It can then be used to extract result measurements through accessing variables or running functions.
+	SHOULD ONLY BE USED WHEN THE LAST LAYER IS SOFTMAX OUTPUT!
+	"""
+    model = None
+    test_x: np.ndarray = None
+    test_y: np.ndarray = None
+    predictions: np.ndarray = None
+
+    def __init__(self, model_to_use):
+        """
+        Initialization function to generate state containing dataset and model predictions
+        """
+        # Safeguard against wrong output activations
+        if model_to_use.layers[-1].activation is not activations.softmax:
+            raise Exception
+
+        # Saves model in state, and loads dataset
+        self.model = model_to_use
+        ___, ___, self.test_x, self.test_y = load_simple_sentence_dataset()
+
+        # Extracts predictions on the test dataset, and converts it to binary list label (1 at maximum output, 0 else)
+        self.predictions = softmax_output_to_list_label_by_maximum(self.model.predict(self.test_x))
+
+    def retrieve_per_class_metrics(self):
+        """
+        Function that retrieves a per-class list of metrics
+        """
+        per_class_metrics = []
+        confusion_matrixes = multilabel_confusion_matrix(self.test_y, self.predictions)
+        for class_number, class_confusion_matrix in enumerate(confusion_matrixes):
+            tn = class_confusion_matrix[0, 0]
+            fn = class_confusion_matrix[1, 0]
+            tp = class_confusion_matrix[1, 1]
+            fp = class_confusion_matrix[0, 1]
+
+            p = tp + fn
+            n = tn + fp
+
+            per_class_metrics.append({
+                "p": p,
+                "n": n,
+                "tp": tp,
+                "tn": tn,
+                "fn": fn,
+                "fp": fp,
+                "sensitivity": tp / p,
+                "specificity": tn / n,
+                "precision": tp / (tp + fp),
+                "accuracy": (tp + tn) / (p + n),
+                "balanced-accuracy": 0.5 * ((tp / p) + (tn / n)),
+                "f1-score": ((2 * tp) / ((2 * tp) + fp + fn)),
+                "mcc": ((tp * tn) - (fp * fn)) / (np.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn)))
+            })
+
+        return per_class_metrics
+
+    def retrieve_total_metrics(self):
+        """
+        Function that retrieves a total metrics
+        """
+        total_metrics = {}
+        p = n = tn = fn = tp = fp = 0
+        confusion_matrixes = multilabel_confusion_matrix(self.test_y, self.predictions)
+        for class_number, class_confusion_matrix in enumerate(confusion_matrixes):
+            tn += class_confusion_matrix[0, 0]
+            fn += class_confusion_matrix[1, 0]
+            tp += class_confusion_matrix[1, 1]
+            fp += class_confusion_matrix[0, 1]
+            p += tp + fn
+            n += tn + fp
+
+        total_metrics = {
+            "p": p,
+            "n": n,
+            "tp": tp,
+            "tn": tn,
+            "fn": fn,
+            "fp": fp,
+            "sensitivity": tp / p,
+            "specificity": tn / n,
+            "precision": tp / (tp + fp),
+            "accuracy": (tp + tn) / (p + n),
+            "balanced-accuracy": 0.5 * ((tp / p) + (tn / n)),
+            "f1-score": ((2 * tp) / ((2 * tp) + fp + fn)),
+            "mcc": ((tp * tn) - (fp * fn)) / (np.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn)))
+        }
+
+        return total_metrics

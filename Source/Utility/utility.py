@@ -46,6 +46,16 @@ def list_label_to_string_label(label: list):
     }[label]
 
 
+def class_number_to_string_label(class_number: int):
+    return {
+        0: 'EXTREMELY NEGATIVE',
+        1: 'NEGATIVE',
+        2: 'NEUTRAL',
+        3: 'POSITIVE',
+        4: 'EXTREMELY POSITIVE',
+    }[class_number]
+
+
 def string_label_to_list_label(label: str):
     return {
         'EXTREMELY NEGATIVE': [1, 0, 0, 0, 0],
@@ -54,6 +64,20 @@ def string_label_to_list_label(label: str):
         'POSITIVE': [0, 0, 0, 1, 0],
         'EXTREMELY POSITIVE': [0, 0, 0, 0, 1],
     }[label.upper()]
+
+
+def softmax_output_to_list_label_by_maximum(predictions: np.ndarray):
+    """
+    Converts a softmax output (Probability for one specific class)
+    to a list label by taking the class with max/most probability
+    :return: The list label
+    """
+    maximum_predictions = np.zeros(predictions.shape)
+    for index, class_predictions in enumerate(predictions):
+        number_of_output_neurons = predictions.shape[1]
+        index_of_maximum_output = np.argmax(class_predictions)
+        maximum_predictions[index, :] = np.identity(number_of_output_neurons)[index_of_maximum_output][:]
+    return maximum_predictions
 
 
 def get_max_length_from_list_of_string(string_list: list):
