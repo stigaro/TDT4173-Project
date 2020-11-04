@@ -154,9 +154,8 @@ class CSVTweetReader(object):
     
     def tokenized(self, fileid= None):
         """
-        Segments, tokenizes, and tags a text in the corpus. Returns a
-        generator of texts, which are lists of sentences, which in turn
-        are lists of part of speech tagged words.
+        Returns a generator of texts, which are lists of sentences,
+        which in turn are lists of part-of-speech tagged words (tuples).
         """
         # TODO: Provide functionality for different tokenisation methods
         # and save these to files (time consuming)

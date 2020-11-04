@@ -40,7 +40,7 @@ def build_lstm():
     lstm.add(Dense(N_CLASSES, activation='softmax'))
     lstm.compile(
         loss='categorical_crossentropy', 
-        optimizer=Adam(learning_rate= 0.01),
+        optimizer= Adam(learning_rate= 0.01),
         metrics=['accuracy']
     )
     return lstm
