@@ -9,9 +9,9 @@ from keras.wrappers.scikit_learn import KerasClassifier
 from keras.layers import Dense, LSTM
 from keras.optimizers import Adam
 
-from Source.Utility.extraction import WordExtractor
-from Source.Utility.loading import CSVTweetReader
-from Source.Utility.utility import digitize
+from src.util.extraction import WordExtractor
+from src.util.loading import CSVTweetReader
+from src.util import digitize
 
 datapath = os.path.join(
     os.path.normpath(

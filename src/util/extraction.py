@@ -6,8 +6,8 @@ from sklearn.metrics import multilabel_confusion_matrix
 from keras.preprocessing import sequence
 from tensorflow.keras import activations
 
-from Source.Utility.loading import load_simple_sentence_dataset
-from Source.Utility.utility import softmax_output_to_list_label_by_maximum
+from src.util.loading import load_simple_sentence_dataset
+from src.util import softmax_output_to_list_label_by_maximum
 
 
 class WordExtractor(BaseEstimator, TransformerMixin):

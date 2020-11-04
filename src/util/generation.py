@@ -1,6 +1,6 @@
 from tensorflow import keras
 
-from Source.Utility.constants import MAXIMUM_SENTENCE_LENGTH
+from src.util.constants import MAXIMUM_SENTENCE_LENGTH
 
 
 class Generator:

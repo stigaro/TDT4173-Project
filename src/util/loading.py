@@ -5,8 +5,8 @@ from nltk import pos_tag, sent_tokenize, wordpunct_tokenize
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import Tokenizer
 
-from Source.Utility.utility import string_label_to_list_label
-from Source.Utility.constants import *
+from src.util import string_label_to_list_label
+from src.util.constants import *
 
 
 def load_raw_training_data():

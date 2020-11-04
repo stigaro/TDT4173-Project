@@ -1,8 +1,8 @@
 from tensorflow import keras
 
-from Source.Utility.constants import *
-from Source.Utility.extraction import SoftmaxOutputResultsExtractor
-from Source.Utility.visualization import *
+from src.util.constants import *
+from src.util.extraction import SoftmaxOutputResultsExtractor
+from src.util.visualization import *
 
 model = keras.models.load_model(PATH_TO_MODEL_GRU_SIMPLE_SAVE)
 result_extractor = SoftmaxOutputResultsExtractor(model)

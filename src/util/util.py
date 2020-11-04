@@ -18,13 +18,22 @@ def timeit(func):
 
 
 def listemize_input(func):
-    """Turns each input to a function into lists of these inputs if not already a  list"""
+    """
+    Turns each input to a function into lists of these 
+    inputs if not already a list
+    """
 
     @wraps
     def wrapper(*args, **kwargs):
         return func(
+            # Modify args
             *[[a] if not type(a) == list else a for a in args],
-            **{k: [v] if not type(v) == list else v for k, v in kwargs.items()}
+            
+            # Modify kwargs
+            **{
+                k: [v] if not type(v) == list else v
+                for k, v in kwargs.items()
+            }
         )
 
     return wrapper
@@ -76,7 +85,8 @@ def softmax_output_to_list_label_by_maximum(predictions: np.ndarray):
     for index, class_predictions in enumerate(predictions):
         number_of_output_neurons = predictions.shape[1]
         index_of_maximum_output = np.argmax(class_predictions)
-        maximum_predictions[index, :] = np.identity(number_of_output_neurons)[index_of_maximum_output][:]
+        maximum_predictions[index, :] =\
+            np.identity(number_of_output_neurons)[index_of_maximum_output][:]
     return maximum_predictions
 
 
@@ -85,4 +95,8 @@ def get_max_length_from_list_of_string(string_list: list):
 
 
 # Define members visible outside of module
-__all__ = [k for k in globals() if k not in ['time', 'wraps']]
+_EXCLUDE = {"np", "time", "wraps"}
+__all__ = [
+    k for k in globals()
+    if k not in _EXCLUDE and not k.startswith('_')
+]

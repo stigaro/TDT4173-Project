@@ -3,9 +3,9 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import Tokenizer
 
-from Source.Utility.constants import *
-from Source.Utility.generation import Generator
-from Source.Utility.loading import load_simple_sentence_dataset
+from src.util.constants import *
+from src.util.generation import Generator
+from src.util.loading import load_simple_sentence_dataset
 
 # Load the dataset
 train_x, train_y, test_x, test_y = load_simple_sentence_dataset()
