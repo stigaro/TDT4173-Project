@@ -5,3 +5,14 @@ PATH_TO_MODEL_GRU_BIDIRECTIONAL_SAVE: str = './Resources/Models/GRU/Bidirectiona
 PATH_TO_MODEL_GRU_SIMPLE_CHECKPOINTS: str = './Resources/Models/GRU/Simple/Checkpoints'
 PATH_TO_MODEL_GRU_BIDIRECTIONAL_CHECKPOINTS: str = './Resources/Models/GRU/Bidirectional/Checkpoints'
 MAXIMUM_SENTENCE_LENGTH: int = 344
+
+import os
+CLEAN_DATA_PATH: str = os.path.normpath(
+    os.path.join(
+        __file__,
+        '../../..',
+        'Resources',
+        'Data',
+        'Clean'
+    )
+)

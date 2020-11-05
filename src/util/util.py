@@ -23,14 +23,14 @@ def listemize_input(func):
     inputs if not already a list
     """
 
-    @wraps
+    @wraps(func)
     def wrapper(*args, **kwargs):
         return func(
             # Modify args
             *[[a] if not type(a) == list else a for a in args],
             
             # Modify kwargs
-            **{
+            *{
                 k: [v] if not type(v) == list else v
                 for k, v in kwargs.items()
             }
