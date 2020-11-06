@@ -1,4 +1,5 @@
 import numpy as np
+import tensorflow as tf
 from unicodedata import category as unicat
 from nltk.probability import FreqDist
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -66,31 +67,21 @@ class WordExtractor(BaseEstimator, TransformerMixin):
         return sequence.pad_sequences(clipped, maxlen=self.doclen)
 
 
-class SigmoidOutputResultsExtractor:
+class ResultsExtractor:
     """
-	Class that is initialized with a model which it uses to predict on the test data.
-	It can then be used to extract result measurements through accessing variables or running functions.
-	SHOULD ONLY BE USED WHEN THE LAST LAYER IS SIGMOID OUTPUT!
-	"""
-    model = None
-    test_x: np.ndarray = None
+    Class that is initialized with a models logit predictions,
+    and can then be used to extract different types of result metrics
+    NB: MUST ONLY BE INITIALIZED WITH LOGITS OUTPUT
+    """
     test_y: np.ndarray = None
-    predictions: np.ndarray = None
+    logits: np.ndarray = None
 
-    def __init__(self, model_to_use):
+    def __init__(self, logits):
         """
-        Initialization function to generate state containing dataset and model predictions
+        Initialization function to generate state containing true labels and model predictions
         """
-        # Safeguard against wrong output activations
-        if model_to_use.layers[-1].activation is not activations.sigmoid:
-            raise Exception
-
-        # Saves model in state, and loads dataset
-        self.model = model_to_use
-        ___, ___, self.test_x, self.test_y = load_simple_sentence_dataset()
-
-        # Extracts predictions on the test dataset
-        self.predictions = self.model.predict(self.test_x)
+        self.logits = logits
+        ___, ___, ___, self.test_y = load_simple_sentence_dataset()
 
     def retrieve_per_class_roc(self):
         """
@@ -99,6 +90,8 @@ class SigmoidOutputResultsExtractor:
         The returned arrays are ordered as the first index
         being a threshold of 0 and last being a threshold of 1.
         """
+        predictions = np.array(tf.math.sigmoid(self.logits).numpy())
+
         thresholds = np.linspace(0, 1, 100)
         empty_array = np.zeros(100, dtype=np.float32)
         class_list_of_tpr_and_fpr = [
@@ -110,10 +103,9 @@ class SigmoidOutputResultsExtractor:
         ]
 
         for threshold_index, threshold in enumerate(thresholds):
-            thresholded_predictions = np.array(self.predictions)
+            thresholded_predictions = np.array(predictions)
             thresholded_predictions[thresholded_predictions >= threshold] = 1.0
             thresholded_predictions[thresholded_predictions < threshold] = 0.0
-
             confusion_matrixes = multilabel_confusion_matrix(self.test_y, thresholded_predictions)
             for class_number, class_confusion_matrix in enumerate(confusion_matrixes):
                 tn = class_confusion_matrix[0, 0]
@@ -126,39 +118,15 @@ class SigmoidOutputResultsExtractor:
 
         return class_list_of_tpr_and_fpr
 
-
-class SoftmaxOutputResultsExtractor:
-    """
-	Class that is initialized with a model which it uses to predict on the test data.
-	It can then be used to extract result measurements through accessing variables or running functions.
-	SHOULD ONLY BE USED WHEN THE LAST LAYER IS SOFTMAX OUTPUT!
-	"""
-    model = None
-    test_x: np.ndarray = None
-    test_y: np.ndarray = None
-    predictions: np.ndarray = None
-
-    def __init__(self, model_to_use):
-        """
-        Initialization function to generate state containing dataset and model predictions
-        """
-        # Safeguard against wrong output activations
-        if model_to_use.layers[-1].activation is not activations.softmax:
-            raise Exception
-
-        # Saves model in state, and loads dataset
-        self.model = model_to_use
-        ___, ___, self.test_x, self.test_y = load_simple_sentence_dataset()
-
-        # Extracts predictions on the test dataset, and converts it to binary list label (1 at maximum output, 0 else)
-        self.predictions = softmax_output_to_list_label_by_maximum(self.model.predict(self.test_x))
-
     def retrieve_per_class_metrics(self):
         """
         Function that retrieves a per-class list of metrics
         """
+        predictions = np.array(tf.math.softmax(self.logits).numpy())
+        predictions = softmax_output_to_list_label_by_maximum(predictions)
+
         per_class_metrics = []
-        confusion_matrixes = multilabel_confusion_matrix(self.test_y, self.predictions)
+        confusion_matrixes = multilabel_confusion_matrix(self.test_y, predictions)
         for class_number, class_confusion_matrix in enumerate(confusion_matrixes):
             tn = class_confusion_matrix[0, 0]
             fn = class_confusion_matrix[1, 0]
@@ -190,9 +158,11 @@ class SoftmaxOutputResultsExtractor:
         """
         Function that retrieves a total metrics
         """
-        total_metrics = {}
+        predictions = np.array(tf.math.softmax(self.logits).numpy())
+        predictions = softmax_output_to_list_label_by_maximum(predictions)
+
         p = n = tn = fn = tp = fp = 0
-        confusion_matrixes = multilabel_confusion_matrix(self.test_y, self.predictions)
+        confusion_matrixes = multilabel_confusion_matrix(self.test_y, predictions)
         for class_number, class_confusion_matrix in enumerate(confusion_matrixes):
             tn += class_confusion_matrix[0, 0]
             fn += class_confusion_matrix[1, 0]
