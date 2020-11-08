@@ -1,0 +1,15 @@
+| Metric            |   Macro-Averaging |
+|-------------------+-------------------|
+| p                 |            759.60 |
+| n                 |           3038.40 |
+| tp                |            650.00 |
+| tn                |           2928.80 |
+| fn                |            109.60 |
+| fp                |            109.60 |
+| sensitivity       |              0.86 |
+| specificity       |              0.96 |
+| precision         |              0.86 |
+| accuracy          |              0.94 |
+| balanced-accuracy |              0.91 |
+| f1-score          |              0.86 |
+| mcc               |              0.82 |

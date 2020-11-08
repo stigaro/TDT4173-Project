@@ -7,8 +7,6 @@
 
 * Working directory is assumed to be the project folder 'TDT4173-Project'
 * Libraries used:
-    - TODO -
-
     numpy~=1.18.5
     pandas
     nltk~=3.5
@@ -20,4 +18,4 @@
     matplotlib~=3.3.2
     cycler~=0.10.0
     tabulate~=0.8.7
-transformers~=3.4.0
+    transformers~=3.4.0

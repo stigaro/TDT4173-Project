@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow import keras
 from transformers import TFBertForSequenceClassification
 
-from Source.Utility.constants import MAXIMUM_SENTENCE_LENGTH
+from Source.Utility.constants import MAXIMUM_SENTENCE_LENGTH, NUMBER_OF_WORDS
 
 
 class Generator:
@@ -11,37 +11,67 @@ class Generator:
     """
 
     @staticmethod
-    def generate_simple_gru_model():
+    def generate_simple_gru_model(hyperparameters):
         """
-        Function that generates a simple GRU model
-        :param maximum_sentence_length: The maximum possible length of a sentence
+        Function that generates a simple GRU model from hyperparameters
         :return: The GRU model
         """
         model = keras.Sequential()
-        model.add(keras.layers.Embedding(10000, 16, input_length=MAXIMUM_SENTENCE_LENGTH))
-        model.add(keras.layers.GRU(64, dropout=0.2))
+
+        hp_output_dim = hyperparameters.Int('embedding_output_dim', min_value=8, max_value=32, step=8)
+        model.add(keras.layers.Embedding(
+            input_dim=NUMBER_OF_WORDS,
+            output_dim=hp_output_dim,
+            input_length=MAXIMUM_SENTENCE_LENGTH
+        ))
+
+        hp_hidden_units = hyperparameters.Int('gru_hidden_units', min_value=8, max_value=128, step=8)
+        hp_dropout_rate = hyperparameters.Float('gru_dropout', min_value=0, max_value=0.5, step=0.1)
+        model.add(keras.layers.GRU(
+            units=hp_hidden_units,
+            dropout=hp_dropout_rate
+        ))
+
         model.add(keras.layers.Dense(5))
+
+        hp_learning_rate = hyperparameters.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4, 1e-5])
+        model.compile(
+            optimizer=keras.optimizers.Adam(learning_rate=hp_learning_rate),
+            loss=keras.losses.BinaryCrossentropy(from_logits=True),
+            metrics=['accuracy']
+        )
+
         return model
 
     @staticmethod
-    def generate_bidirectional_gru_model():
+    def generate_bidirectional_gru_model(hyperparameters):
         """
-        Function that generates a bidirectional GRU model
-        :param maximum_sentence_length: The maximum possible length of a sentence
+        Function that generates a bidirectional GRU model from hyperparameters
         :return: The GRU model
         """
         model = keras.Sequential()
-        model.add(keras.layers.Embedding(10000, 16, input_length=MAXIMUM_SENTENCE_LENGTH))
-        model.add(keras.layers.Bidirectional(keras.layers.GRU(64, dropout=0.2)))
-        model.add(keras.layers.Dense(5))
-        return model
 
-    @staticmethod
-    def generate_transformer_bert_model():
-        transformer = TFBertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=5, output_attentions=False, output_hidden_states=False)
-        input_ids = tf.keras.layers.Input(shape=(MAXIMUM_SENTENCE_LENGTH,), name='input_token', dtype='int32')
-        input_masks_ids = tf.keras.layers.Input(shape=(MAXIMUM_SENTENCE_LENGTH,), name='masked_token', dtype='int32')
-        transformer_output = transformer(input_ids, input_masks_ids)[0]
-        transformer_output = tf.keras.layers.Dense(5, activation='sigmoid')(transformer_output)
-        model = tf.keras.Model(inputs=[input_ids, input_masks_ids], outputs=transformer_output)
+        hp_output_dim = hyperparameters.Int('embedding_output_dim', min_value=8, max_value=32, step=8)
+        model.add(keras.layers.Embedding(
+            input_dim=NUMBER_OF_WORDS,
+            output_dim=hp_output_dim,
+            input_length=MAXIMUM_SENTENCE_LENGTH
+        ))
+
+        hp_hidden_units = hyperparameters.Int('gru_hidden_units', min_value=8, max_value=128, step=8)
+        hp_dropout_rate = hyperparameters.Float('gru_dropout', min_value=0, max_value=0.5, step=0.1)
+        model.add(keras.layers.Bidirectional(keras.layers.GRU(
+            units=hp_hidden_units,
+            dropout=hp_dropout_rate
+        )))
+
+        model.add(keras.layers.Dense(5))
+
+        hp_learning_rate = hyperparameters.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4, 1e-5])
+        model.compile(
+            optimizer=keras.optimizers.Adam(learning_rate=hp_learning_rate),
+            loss=keras.losses.BinaryCrossentropy(from_logits=True),
+            metrics=['accuracy']
+        )
+
         return model
