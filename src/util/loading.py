@@ -2,6 +2,8 @@ import os
 import csv
 import pickle
 from sys import path
+import nltk
+from nltk.util import pr
 import numpy as np
 from nltk import pos_tag, sent_tokenize, wordpunct_tokenize
 from nltk import TweetTokenizer
@@ -105,8 +107,6 @@ class CSVTweetReader(object):
         which results are saved to output_path.
         """
 
-        print(f'Instantiating with path: {input_path}')
-
         self.root = input_path
         self.output_path = output_path
 
@@ -118,8 +118,13 @@ class CSVTweetReader(object):
         ] if os.path.isdir(input_path) else [input_path]
         
         self.csv_files = list(map(os.path.basename, self.paths))
+        self._unique_labels = None
 
+        print(f'Instantiating with path: {input_path}')
+        print(f'Processed data will be outputted to {output_path}')
+        print()
         print(f'csv files found: {self.csv_files}')
+        print()
 
         assert len(self.paths) > 0, \
             "The provided directory/file contained no csv files"
@@ -176,13 +181,24 @@ class CSVTweetReader(object):
         cleaner = self.prepare(categories, "Sentiment")
         for data in self.read(cleaner=cleaner):
             yield data['id']
-
-    def labels(self, fileids=None):
-        """Return the labels"""
-        cleaner = self.prepare(fileids, 'id')
-        for data in self.read(cleaner=cleaner):
-            yield data['Sentiment']
             
+    @property
+    def unique_labels(self):
+        """Return the unique labels from the initialized dataset"""
+        if self._unique_labels is None:
+            self._unique_labels = dict(
+                (x, i + 1) for i, x in enumerate(sorted(set(self.labels())))
+            )
+        return self._unique_labels
+    
+    def labels(self, fileids=None, digitized= False):
+        """Return the labels for the fileids"""
+        cleaner = self.prepare(fileids, 'id')
+        apply = (lambda sent: self.unique_labels[sent]) if digitized else (lambda x: x)
+        
+        for data in self.read(cleaner=cleaner):
+            yield apply(data['Sentiment'])
+
     def resolve_tokenizer(self, tknzr):
         """
         Returns a callable version of the tokenizer if not
@@ -233,7 +249,7 @@ class CSVTweetReader(object):
         
         try:
             tknzd = file_contents[idx]
-            print('Retrieving existing tokenised dataset.')
+            print(f'Retrieving existing tokenised dataset from \n {filepath}')
             
         except Exception as e:
             print(f'Tokenizing {self.csv_files} with {tknzr.__name__} for the first time.')
@@ -256,22 +272,16 @@ class CSVTweetReader(object):
         """
         tokenizer = self.resolve_tokenizer(tknzr)
         return self.get_tokenized(fileids, tokenizer)
-            
-    @staticmethod
-    def nltk_wordpunct_tokenizer(text):
-        return [
-            pos_tag(wordpunct_tokenize(sent))
-            for sent in sent_tokenize(text)
-        ]
         
     @staticmethod
     def nltk_tweet_tokenizer(text):
         tknzr = TweetTokenizer(reduce_len= True, strip_handles= True)
-        return [
-            pos_tag(tknzr.tokenize(sent))
-            for sent in sent_tokenize(text)
-        ]
-        
+        return tknzr.tokenize(text)
+    
+    @staticmethod
+    def nltk_wordpunct_tokenizer(text):
+        return wordpunct_tokenize(text)
+    
     _EXCLUDE = {
         'get_tokenized', 'get_id', 'save', 'load', 
         'tokenize', 'resolve_tokenizer', 'get_str_from_tknzr',
@@ -281,9 +291,30 @@ class CSVTweetReader(object):
     #__all__ = [k for k in globals() if k not in _EXCLUDE and not k.startswith('_')]
     
 if __name__ == "__main__":
+    from src.util import kaggle_regex_cleaner
+    import pandas as pd
+    
     reader = CSVTweetReader(input_path=PATH_TO_RAW_TRAIN_DATA,
                             output_path=CLEAN_DATA_PATH)
     
-    for i, data in enumerate(reader.tokenized(tknzr= 'nltk_tweet')):
-        if i==10: break
+    # Verify data reader function
+    df = pd.DataFrame(data= reader.read())
+    print(df)
+    print()
+    print(df.info())
+    
+    # Check results from tokenisation by inspection
+    for i, data in enumerate(reader.texts()):
+        if i >= 10: break
+        print(i,': ')
+        print('Raw:')
         print(data)
+        print()
+        print('Cleaned:')
+        print(kaggle_regex_cleaner(data))
+        print()
+        print('tokenized & cleaned')
+        print([
+            kaggle_regex_cleaner(tkn)
+            for tkn in reader.nltk_tweet_tokenizer(data)
+        ])

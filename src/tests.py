@@ -66,12 +66,6 @@ class TestCSVTweetReader(object):
         assert reader.get_id(csvs, fileids) == expected, \
             'get_id did not return sets for the different inputs'
             
-    def test_str_from_tokenizer(self, reader):
-        
-        def dummy_tokenizer(): return
-        
-        assert reader.get_str_from_tknzr(dummy_tokenizer) == 'dummy', \
-            'did not extract essential part of tokenizer method'
     
     def test_load_makes_files(self, reader):
         # Test if dir content are same before and after call

@@ -1,7 +1,51 @@
-import time
+import time, re, string, random, math
+import nltk
 from functools import wraps
+from unicodedata import category as unicat
 import numpy as np
 
+def simple_cleaner(sent):
+    """
+	Removes punctuation from a tokenized/tagged sentence and
+	lowercases words.
+	"""
+    is_punct = lambda word: all(unicat(c).startswith('P') for c in word)
+    sent = filter(lambda t: not is_punct(t), sent)
+    sent = map(lambda t: t.lower(), sent)
+    return list(sent)
+
+def atap_simple_cleaner(token):
+    """
+    Simplest cleaner used in the book
+    Aplied Text Analysis with Python.
+    
+    Lowercases and stems.
+    """
+    stem = nltk.stem.SnowballStemmer('english')
+    return stem.stem(str(token).lower())
+
+def kaggle_regex_cleaner(doc):
+    '''
+    cleaner used by most read notebook on twitter competition
+    
+    Make text lowercase, remove text in square brackets,remove links,
+    remove punctuation and remove words containing numbers.'''
+    def regex_clean(text):
+        text = str(text).lower()
+        text = re.sub('\[.*?\]', '', text)
+        text = re.sub('https?://\S+|www\.\S+', '', text)
+        text = re.sub('<.*?>+', '', text)
+        text = re.sub('[%s]' % re.escape(string.punctuation), '', text)
+        text = re.sub('\n', '', text)
+        text = re.sub('\w*\d\w*', '', text)
+        return text
+    
+    doc = simple_cleaner(doc)
+    for token in doc:
+        cleaned = regex_clean(token)
+        cleaned = atap_simple_cleaner(cleaned)
+        if not cleaned == '' or not cleaned is None:
+            yield cleaned
 
 def timeit(func):
     """Times a function and prints it"""
@@ -93,6 +137,14 @@ def softmax_output_to_list_label_by_maximum(predictions: np.ndarray):
 def get_max_length_from_list_of_string(string_list: list):
     return max([len(string) for string in string_list])
 
+def random_sample(x, y, norm_size):
+    assert len(x) == len(y), 'list x and y should have same size'
+    idxs = list(range(len(x)))
+    rand_idxs = [
+        idxs.pop(random.randrange(0, len(idxs)))
+        for x in range(math.floor(len(x) * norm_size))
+    ]
+    return [x[i] for i in rand_idxs], [y[i] for i in rand_idxs]
 
 # Define members visible outside of module
 _EXCLUDE = {"np", "time", "wraps"}
