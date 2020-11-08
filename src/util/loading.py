@@ -34,7 +34,7 @@ def load_raw_testing_data():
     return raw_data
 
 
-def load_simple_sentence_dataset(tokenize=True):
+def load_simple_sentence_dataset():
     training_data = load_raw_training_data()
     testing_data = load_raw_testing_data()
 
@@ -53,22 +53,6 @@ def load_simple_sentence_dataset(tokenize=True):
     train_y = np.array([y for (x, y) in dataset["train"]]).astype(np.int)
     test_x = np.array([x for (x, y) in dataset["test"]]).astype(np.str)
     test_y = np.array([y for (x, y) in dataset["test"]]).astype(np.int)
-
-    if tokenize is True:
-        # Tokenize the sentences
-        tokenizer = Tokenizer(num_words=10000)
-        list_of_all_sentences = train_x.tolist() + test_x.tolist()
-        tokenizer.fit_on_texts(list_of_all_sentences)
-        train_x = tokenizer.texts_to_sequences(train_x)
-        test_x = tokenizer.texts_to_sequences(test_x)
-
-        # Adds padding to tokenized sentences not at max length
-        train_x = pad_sequences(train_x, maxlen=MAXIMUM_SENTENCE_LENGTH)
-        test_x = pad_sequences(test_x, maxlen=MAXIMUM_SENTENCE_LENGTH)
-
-    # Reshape labels to work with tensorflow
-    train_y = np.asarray(train_y).astype('float32').reshape((-1, 5))
-    test_y = np.asarray(test_y).astype('float32').reshape((-1, 5))
 
     return train_x, train_y, test_x, test_y
 
