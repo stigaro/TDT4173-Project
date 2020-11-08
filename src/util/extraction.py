@@ -7,42 +7,27 @@ from sklearn.metrics import multilabel_confusion_matrix
 from keras.preprocessing import sequence
 from tensorflow.keras import activations
 
-from Source.Utility.loading import load_simple_sentence_dataset
-from Source.Utility.utility import softmax_output_to_list_label_by_maximum
+from src.util.loading import load_simple_sentence_dataset
+from src.util import softmax_output_to_list_label_by_maximum
 
 
-class WordExtractor(BaseEstimator, TransformerMixin):
+class WordLexicolizer(BaseEstimator, TransformerMixin):
     """
-	Extract tokens, and transform
-	documents into lists of these (encoded) tokens, with a total
-	token lexicon limited by the nfeatures parameter
+	Encodes tokens in tokenized documents, with a total
+	token-to-encoding lexicon limited by the nfeatures parameter
 	and a document length limited/padded to doclen
 	"""
 
-    def __init__(self, nfeatures=100000, doclen=60):
+    def __init__(self, nfeatures=100000, doclen=60, normalizers= []):
         self.nfeatures = nfeatures
         self.doclen = doclen
+        self.normalizers = normalizers
         self.lexicon = None
-
-    def normalize(self, sent):
-        """
-		Removes punctuation from a tokenized/tagged sentence and
-		lowercases words.
-		"""
-        is_punct = lambda word: all(unicat(c).startswith('P') for c in word)
-        sent = filter(lambda t: not is_punct(t[0]), sent)
-        sent = map(lambda t: t[0].lower(), sent)
-        return list(sent)
-
-    def extract_words(self, sents):
-        for sent in sents:
-            for word in self.normalize(sent):
-                yield word
-
-    def fit(self, documents, y=None):
-        docs = [list(self.extract_words(doc)) for doc in documents]
-        self.lexicon = self.get_lexicon(docs)
-        return self
+        
+    def normalize(self, doc):
+        for norm in self.normalizers:
+            doc = norm(doc)
+        return doc
 
     def get_lexicon(self, norm_docs):
         """
@@ -58,11 +43,21 @@ class WordExtractor(BaseEstimator, TransformerMixin):
         """
 		Remove tokens from documents that aren't in the lexicon
 		"""
-        return [self.lexicon[token] for token in norm_doc
-                if token in self.lexicon.keys()]
+        return [
+            self.lexicon[token]
+            if token in self.lexicon.keys() else 0 # Unknown reserved as 0
+            for token in norm_doc
+        ]
+    
+    def fit(self, documents, y= None):
+        docs = [list(self.normalize(doc)) for doc in documents]
+        self.lexicon = self.get_lexicon(docs)
+        print('The most common word according to the encoding is: ')
+        print([t[0] for t in sorted(self.lexicon.items(), key= lambda i: i[1])][:100])
+        return self
 
     def transform(self, documents):
-        docs = [list(self.extract_words(doc)) for doc in documents]
+        docs = [self.normalize(doc) for doc in documents]
         clipped = [list(self.clip(doc)) for doc in docs]
         return sequence.pad_sequences(clipped, maxlen=self.doclen)
 

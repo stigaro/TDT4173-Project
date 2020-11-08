@@ -19,3 +19,14 @@ PATH_TO_RESULT_TRANSFORMER_BERT: str = './Resources/Results/Transformer/BERT'
 MAXIMUM_SENTENCE_LENGTH: int = 344
 NUMBER_OF_WORDS = 10000
 HYPER_PARAMETER_PROJECT_NAME = 'Hyperparameter Search'
+
+import os
+CLEAN_DATA_PATH: str = os.path.normpath(
+    os.path.join(
+        __file__,
+        '../../..',
+        'Resources',
+        'Data',
+        'Clean'
+    )
+)

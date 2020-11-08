@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from cycler import cycler
 from tabulate import tabulate
 
-from Source.Utility.utility import class_number_to_string_label
+from src.util import class_number_to_string_label
 
 
 def save_per_class_roc_curves(per_class_roc_curves, filepath: str):

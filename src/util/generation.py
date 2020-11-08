@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow import keras
 from transformers import TFBertForSequenceClassification
 
-from Source.Utility.constants import MAXIMUM_SENTENCE_LENGTH, NUMBER_OF_WORDS
+from src.util.constants import MAXIMUM_SENTENCE_LENGTH, NUMBER_OF_WORDS
 
 
 class Generator:
