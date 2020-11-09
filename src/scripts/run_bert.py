@@ -7,7 +7,6 @@ from transformers import TFBertForSequenceClassification
 from src.util.constants import *
 from src.util.extraction import ResultsExtractor
 from src.util.loading import load_simple_sentence_dataset
-from src.util.visualization import *
 
 os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 physical_devices = tf.config.list_physical_devices('GPU')
@@ -48,6 +47,7 @@ model.save_pretrained(PATH_TO_MODEL_TRANSFORMER_BERT_SAVE)
 # Save the results
 predictions = model.predict(x=test_x.values())[0]
 results = ResultsExtractor(predictions)
-save_macro_averaged_metrics(results.retrieve_per_class_metrics(), PATH_TO_RESULT_TRANSFORMER_BERT)
-save_per_class_metrics(results.retrieve_per_class_metrics(), PATH_TO_RESULT_TRANSFORMER_BERT)
-save_per_class_roc_curves(results.retrieve_per_class_roc(), PATH_TO_RESULT_TRANSFORMER_BERT)
+results.save_per_class_roc_curves(PATH_TO_RESULT_TRANSFORMER_BERT)
+results.save_confusion_matrix(PATH_TO_RESULT_TRANSFORMER_BERT)
+results.save_per_class_metrics(PATH_TO_RESULT_TRANSFORMER_BERT)
+results.save_macro_averaged_metrics(PATH_TO_RESULT_TRANSFORMER_BERT)

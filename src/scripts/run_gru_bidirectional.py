@@ -9,7 +9,6 @@ from src.util.constants import *
 from src.util.extraction import ResultsExtractor
 from src.util.generation import Generator
 from src.util.loading import load_simple_sentence_dataset
-from src.util.visualization import *
 
 os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 physical_devices = tf.config.list_physical_devices('GPU')
@@ -66,7 +65,8 @@ model.save(PATH_TO_MODEL_GRU_BIDIRECTIONAL_SAVE)
 # Save the results
 predictions = model.predict(x=test_x)
 results = ResultsExtractor(predictions)
-save_macro_averaged_metrics(results.retrieve_per_class_metrics(), PATH_TO_RESULT_GRU_BIDIRECTIONAL)
-save_per_class_metrics(results.retrieve_per_class_metrics(), PATH_TO_RESULT_GRU_BIDIRECTIONAL)
-save_per_class_roc_curves(results.retrieve_per_class_roc(), PATH_TO_RESULT_GRU_BIDIRECTIONAL)
-save_best_hyperparameters(best_hyperparameters, PATH_TO_RESULT_GRU_BIDIRECTIONAL)
+results.save_per_class_roc_curves(PATH_TO_RESULT_GRU_BIDIRECTIONAL)
+results.save_confusion_matrix(PATH_TO_RESULT_GRU_BIDIRECTIONAL)
+results.save_per_class_metrics(PATH_TO_RESULT_GRU_BIDIRECTIONAL)
+results.save_macro_averaged_metrics(PATH_TO_RESULT_GRU_BIDIRECTIONAL)
+results.save_best_hyperparameters(best_hyperparameters, PATH_TO_RESULT_GRU_BIDIRECTIONAL)
