@@ -56,6 +56,10 @@ def list_label_to_string_label(label: list):
     }[label]
 
 
+def list_label_to_number_label(label: list):
+    return np.where(label)[0][0]
+
+
 def class_number_to_string_label(class_number: int):
     return {
         0: 'EXTREMELY NEGATIVE',

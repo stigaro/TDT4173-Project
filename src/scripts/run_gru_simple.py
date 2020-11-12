@@ -1,35 +1,55 @@
+import os
+import pandas as pd
 import numpy as np
 import tensorflow as tf
+import kerastuner as kt
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import Tokenizer
 
-from Source.Utility.constants import *
-from Source.Utility.extraction import ResultsExtractor
-from Source.Utility.generation import Generator
-from Source.Utility.loading import load_simple_sentence_dataset
-from Source.Utility.visualization import save_per_class_metrics, save_per_class_roc_curves
+from src.util.constants import *
+from src.util.extraction import ResultsExtractor
+from src.util.generation import Generator
+from src.util.loading import load_simple_sentence_dataset
+
+os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
+physical_devices = tf.config.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(physical_devices[0], enable=True)
 
 # Load the dataset
 train_x, train_y, test_x, test_y = load_simple_sentence_dataset()
 
 # Tokenize the sentences
-tokenizer = Tokenizer(num_words=10000, oov_token=True)
+tokenizer = Tokenizer(num_words=NUMBER_OF_WORDS, oov_token=True)
 tokenizer.fit_on_texts(train_x.tolist())
 train_x = tokenizer.texts_to_sequences(train_x)
 test_x = tokenizer.texts_to_sequences(test_x)
 
 # Adds padding to tokenized sentences not at max length
+# and reshape labels to work with tensorflow
 train_x = pad_sequences(train_x, maxlen=MAXIMUM_SENTENCE_LENGTH)
-test_x = pad_sequences(test_x, maxlen=MAXIMUM_SENTENCE_LENGTH)
-
-# Reshape labels to work with tensorflow
 train_y = np.asarray(train_y).astype('float32').reshape((-1, 5))
+test_x = pad_sequences(test_x, maxlen=MAXIMUM_SENTENCE_LENGTH)
 test_y = np.asarray(test_y).astype('float32').reshape((-1, 5))
 
-# Create the model
-model = Generator.generate_simple_gru_model()
+# Define a hyperband for searching hyperparameters
+# (If search has already been done it will simply load from the directory)
+tuner = kt.Hyperband(
+    Generator.generate_simple_gru_model,
+    objective='val_accuracy',
+    max_epochs=5,
+    factor=2,
+    directory=PATH_TO_MODEL_GRU_SIMPLE_HYPERPARAMETER,
+    project_name=HYPER_PARAMETER_PROJECT_NAME
+)
 
-# Create a callback that saves the model's weights every 5 epochs
+# Perform search for best hyperparameters (If not already done)
+tuner.search(train_x, train_y, epochs=5, validation_split=0.10)
+
+# Get the optimal hyperparameters, and use those to create a model for training
+best_hyperparameters = tuner.get_best_hyperparameters()[0]
+model = Generator.generate_simple_gru_model(best_hyperparameters)
+
+# Create a callback that saves the model's weights every epoch
 checkpoint_path = PATH_TO_MODEL_GRU_SIMPLE_CHECKPOINTS + "/cp-{epoch:04d}.ckpt"
 cp_callback = tf.keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_path,
@@ -39,15 +59,15 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(
     period=1
 )
 
-# Compile the model
-model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True), optimizer='adam', metrics=['accuracy'])
-
 # Fit the model and save it
-model.fit(train_x, train_y, epochs=5, batch_size=10, callbacks=[cp_callback], validation_split=0.10)
+model.fit(train_x, train_y, epochs=5, batch_size=64, callbacks=[cp_callback], validation_split=0.10)
 model.save(PATH_TO_MODEL_GRU_SIMPLE_SAVE)
 
 # Save the results
 predictions = model.predict(x=test_x)
 results = ResultsExtractor(predictions)
-save_per_class_metrics(results.retrieve_per_class_metrics(), PATH_TO_RESULT_GRU_SIMPLE)
-save_per_class_roc_curves(results.retrieve_per_class_roc(), PATH_TO_RESULT_GRU_SIMPLE)
+results.save_per_class_roc_curves(PATH_TO_RESULT_GRU_SIMPLE)
+results.save_confusion_matrix(PATH_TO_RESULT_GRU_SIMPLE)
+results.save_per_class_metrics(PATH_TO_RESULT_GRU_SIMPLE)
+results.save_macro_averaged_metrics(PATH_TO_RESULT_GRU_SIMPLE)
+results.save_best_hyperparameters(best_hyperparameters, PATH_TO_RESULT_GRU_SIMPLE)
