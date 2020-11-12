@@ -275,12 +275,3 @@ class ResultsExtractor:
         with open(filepath + '/' + 'macro_metrics.txt', 'w') as file:
             file.write(tabular)
             file.close()
-
-    @staticmethod
-    def save_best_hyperparameters(hyperparameters, filepath: str):
-        with open(filepath + '/' + 'best_hyperparameters.txt', 'w') as file:
-            file.write('embedding_output_dim: {:.5f}\n'.format(hyperparameters.get('embedding_output_dim')))
-            file.write('gru_hidden_units: {:.5f}\n'.format(hyperparameters.get('gru_hidden_units')))
-            file.write('gru_dropout: {:.5f}\n'.format(hyperparameters.get('gru_dropout')))
-            file.write('learning_rate: {:.5f}\n'.format(hyperparameters.get('learning_rate')))
-            file.close()

@@ -1,0 +1,6 @@
+hidden_layer_1_units: 640.00000
+hidden_layer_2_units: 128.00000
+hidden_layer_3_units: 256.00000
+hidden_layer_4_units: 80.00000
+dropout_Rate: 0.10000
+learning_rate: 0.01000
