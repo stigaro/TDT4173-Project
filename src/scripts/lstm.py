@@ -15,10 +15,12 @@ from keras.optimizers import Adam
 
 from src.util.extraction import WordLexicolizer
 from src.util.loading import CSVTweetReader
-from src.util import digitize, random_sample, kaggle_regex_cleaner, simple_cleaner
+from src.util import digitize, random_sample
 from src.util.constants import *
 
 from matplotlib import pyplot as plt
+
+import nltk
 
 corpus = CSVTweetReader(input_path= PATH_TO_RAW_TRAIN_DATA,
                         output_path= CLEAN_DATA_PATH)
@@ -26,13 +28,13 @@ corpus = CSVTweetReader(input_path= PATH_TO_RAW_TRAIN_DATA,
 X = list(corpus.tokenized(tknzr= 'nltk_tweet'))
 y = list(corpus.labels(digitized= True))
 
-N_FEATURES = 1000  # I.e. # of words known to the encoding
+N_FEATURES = 8000  # I.e. # of words known to the encoding
 DOC_LEN = 50
 N_CLASSES = len(corpus.unique_labels)
 
 def build_lstm():
     lstm = Sequential()
-    lstm.add(Embedding(N_FEATURES+1, 100, input_length= DOC_LEN))
+    lstm.add(Embedding(N_FEATURES+1, 20, input_length= DOC_LEN))
     lstm.add(Dropout(0.5))
     lstm.add(LSTM(units=100, activation= 'sigmoid'))
     lstm.add(Dropout(0.5))
@@ -48,7 +50,7 @@ def build_lstm():
 model = Pipeline([
     ('tokens', WordLexicolizer(nfeatures=N_FEATURES,
                              doclen=DOC_LEN,
-                             normalizers=[simple_cleaner])),
+                             normalizers=[])),
     ('nn', KerasClassifier(build_fn=build_lstm,
                            epochs=10,
                            batch_size=128))
@@ -63,9 +65,9 @@ def cross_val():
         
 def train_and_eval():
     global y
-    x, y = random_sample(X, y, 0.25)
+    #X, y = random_sample(X, y, 0.25)
     
-    x_train, x_val, y_train, y_val= train_test_split(x, y,
+    x_train, x_val, y_train, y_val= train_test_split(X, y,
                                                     test_size= 0.05,
                                                     shuffle= True)
     

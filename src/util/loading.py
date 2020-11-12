@@ -13,6 +13,8 @@ from tensorflow.keras.preprocessing.text import Tokenizer
 from src.util import string_label_to_list_label, listemize_input
 from src.util.constants import *
 
+nltk.download('averaged_perceptron_tagger')
+
 
 def load_raw_training_data():
     raw_data = []
@@ -22,7 +24,6 @@ def load_raw_training_data():
         for row in reader:
             raw_data.append(row)
     return raw_data
-
 
 def load_raw_testing_data():
     raw_data = []
@@ -55,7 +56,6 @@ def load_simple_sentence_dataset():
     test_y = np.array([y for (x, y) in dataset["test"]]).astype(np.int)
 
     return train_x, train_y, test_x, test_y
-
 
 def load_simple_word_dataset():
     training_data = load_raw_training_data()
@@ -265,6 +265,15 @@ class CSVTweetReader(object):
     @staticmethod
     def nltk_wordpunct_tokenizer(text):
         return wordpunct_tokenize(text)
+
+    @staticmethod
+    def nltk_sent_tweet_tokenizer(text):
+        tknze = TweetTokenizer(reduce_len=True, strip_handles=True).tokenize
+
+        return [
+            pos_tag(tknze(sent))
+            for sent in sent_tokenize(text)
+        ]
     
     _EXCLUDE = {
         'get_tokenized', 'get_id', 'save', 'load', 
@@ -275,7 +284,6 @@ class CSVTweetReader(object):
     #__all__ = [k for k in globals() if k not in _EXCLUDE and not k.startswith('_')]
     
 if __name__ == "__main__":
-    from src.util import kaggle_regex_cleaner
     import pandas as pd
     
     reader = CSVTweetReader(input_path=PATH_TO_RAW_TRAIN_DATA,
@@ -287,6 +295,8 @@ if __name__ == "__main__":
     print()
     print(df.info())
     
+    
+
     # Check results from tokenisation by inspection
     for i, data in enumerate(reader.texts()):
         if i >= 10: break
@@ -295,10 +305,10 @@ if __name__ == "__main__":
         print(data)
         print()
         print('Cleaned:')
-        print(kaggle_regex_cleaner(data))
+        print()
         print()
         print('tokenized & cleaned')
         print([
-            kaggle_regex_cleaner(tkn)
-            for tkn in reader.nltk_tweet_tokenizer(data)
+            tkn
+            for tkn in reader.nltk_sent_tweet_tokenizer(data)
         ])
