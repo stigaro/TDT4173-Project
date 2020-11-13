@@ -23,3 +23,5 @@
     ekphrasis
     tweet-preprocessor
     seaborn~=0.11.0
+    pycontractions
+    wordcloud

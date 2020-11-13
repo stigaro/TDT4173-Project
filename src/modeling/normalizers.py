@@ -1,9 +1,13 @@
 from sklearn.base import TransformerMixin, BaseEstimator
 import preprocessor as p
 from ekphrasis.classes.segmenter import Segmenter
+from pycontractions import Contractions
+import nltk.corpus.reader.wordnet as wn
 
 import re, nltk
 from unicodedata import category as unicat
+
+from src.util import timeit
 
 nltk.download('wordnet')
 nltk.download('stopwords')
@@ -13,66 +17,86 @@ seg_tw = Segmenter(corpus= 'twitter')
 stemmer = nltk.stem.SnowballStemmer('english')
 lemmatizer = nltk.stem.WordNetLemmatizer()
 stop_words = set(nltk.corpus.stopwords.words('english'))
+cont = Contractions(api_key= "glove-twitter-100")
 
-def is_punct(word):
-    return all(unicat(c).startswith('P') for c in word)
+tags = {
+    'N': wn.NOUN,
+    'V': wn.VERB,
+    'R': wn.ADV,
+    'J': wn.ADJ
+}
+
 
 def remove_punct_words(text):
-    for token, pt in text:
-        if not is_punct(token):
-            yield token, pt
+    return [
+        (token, pt) for token, pt in text
+        if not all(unicat(c).startswith('P') for c in token)
+    ]
 
 def stemmer(text):
     """
     Uses nltk's snowballstemmer to stem english words
     """
-    for word, pt in text:
-        yield stemmer.stem(str(word)), pt
+    return [
+        (stemmer.stem(str(word)), pt) for word, pt in text
+    ]
 
 def lower(text):
-    for token, pt in text:
-        yield token.lower(), pt
+    return [
+       ( token.lower(), pt) for token, pt in text
+    ]
 
 def remove_stop_words(text):
-    for token, pt in text:
-        if not token in stop_words:
-            yield token, pt
+    return [
+        (token, pt) for token, pt in text
+        if not token in stop_words
+    ]
 
 def split_hashtags(text):
     """
     If text contains hashtags, split into a well formed phrases.
     E.g [#imsocool] -> [#, im, so, cool]
     """
+    new_text = []
     for token, pt in text:
         if '#' in token:
-            for t in seg_tw.segment(token):
-                yield t, pt
+            split = ''.join(seg_tw.segment(token))
+            split = ['#'] + re.split('[^a-zA-Z0-9]', split)
+            for t in split:
+                new_text.append((t, pt))
         else:
-            yield token, pt
+            new_text.append((token, pt))
+    return new_text
 
 def remove_links(text):
-    for token, pt in text:
-        if re.search('https?://\S+|www\.\S+', token) is None:
-            yield token, pt
+    return [
+        (token, pt) for token, pt in text
+        if re.search('https?://\S+|www\.\S+', token) is None
+    ]
 
 def tweet_preprocess(text):
     """Preprocess tokens according to tweet-preprocessor"""
-    for token, pt in text:
-        yield p.clean(token), pt
+    return [
+        (p.clean(token), pt) for token, pt in text
+    ]
 
 def lemmatize(text):
-    import nltk.corpus.reader.wordnet as wn
+    return [
+        (lemmatizer.lemmatize(token, tags.get(pt[0], wn.NOUN)), pt)
+        for token, pt in text
+    ]
 
-    tags = {
-        'N': wn.NOUN,
-        'V': wn.VERB,
-        'R': wn.ADV,
-        'J': wn.ADJ
-    }
-
+def expand_contr(text):  # Extremely slow unfortunatly
+    new_text = []
     for token, pt in text:
-        tag = tags.get(pt[0], wn.NOUN)
-        yield lemmatizer.lemmatize(token, tag), pt
+        if "'" in token:
+            for exp in cont.expand_texts([token]):
+                for t in exp.split(' '):
+                    new_text.append((t, pt))
+        else:
+            new_text.append((token, pt))
+    return new_text
+
 
 def regex_clean(text):
     text = re.sub('\[.*?\]', '', text)
@@ -85,11 +109,29 @@ def regex_clean(text):
 
 class TweetNormalizer(TransformerMixin, BaseEstimator):
     def __init__(self, normalizers= None):
+        """
+        Normamizes tweets that are expected to be sent-tokenized,
+        word-tokenized and pos-tagged.
+
+        Default normalizers are:
+            - lowercasing
+            - remoce links
+            - remove puncuations
+            - expanded hashtags
+            - lemmatisation
+
+        These can be ovrrided by providing a list of normalisation
+        callbacks. See the src.modeling.normalizers module for examples on
+        these methods.
+        """
         
         # Use defaults if not specified
         self.normalizers = normalizers if normalizers is not None else [
             lower,
+            remove_links,
             remove_punct_words,
+            split_hashtags,
+            #expand_contr,
             lemmatize
         ]
     
@@ -106,9 +148,11 @@ class TweetNormalizer(TransformerMixin, BaseEstimator):
             for token, pt in sent:
                 if token:
                     yield token
-    
+
     def transform(self, documents):
-        return [list(self.normalize(doc)) for doc in documents]
+        return [
+            list(self.normalize(doc)) for doc in documents
+        ]
     
 
 if __name__ == "__main__":
@@ -116,41 +160,31 @@ if __name__ == "__main__":
                                     PATH_TO_RAW_TRAIN_DATA)
 
     from src.util.loading import CSVTweetReader
+    from src.modeling.tokenizers import nltk_sent_tweet_tokenizer
 
     reader = CSVTweetReader(input_path= PATH_TO_RAW_TRAIN_DATA,
                             output_path= CLEAN_DATA_PATH)
 
     transformer = TweetNormalizer()
 
-    processed = reader.tokenized(tknzr= 'nltk_sent_tweet')
+    processed = reader.tokenized(tknzr= nltk_sent_tweet_tokenizer)
 
     transformed = transformer.transform(processed)
 
     for i, t in enumerate(transformed):
         if i >= 10: break
         print(i, ':')
-        print(t)
+        print(list(t))
 
+    from wordcloud import WordCloud
+    import matplotlib.pyplot as plt
+    from nltk import FreqDist
 
-
-
-"""    
-import pandas as pd
-import numpy as np
-import json
-from collections import Counter
-from wordcloud import WordCloud
-import matplotlib.pyplot as plt
-import re, string, unicodedata
-import nltk
-from nltk import word_tokenize, sent_tokenize, FreqDist
-
-#Frequency of words
-fdist = FreqDist(tweets['Segmented#'])
-#WordCloud
-wc = WordCloud(width=800, height=400, max_words=50).generate_from_frequencies(fdist)
-plt.figure(figsize=(12,10))
-plt.imshow(wc, interpolation="bilinear")
-plt.axis("off")
-plt.show()
-"""
+    #Frequency of words
+    fdist = FreqDist(token for doc in transformed for token in doc)
+    #WordCloud
+    wc = WordCloud(width=800, height=400, max_words=50).generate_from_frequencies(fdist)
+    plt.figure(figsize=(12,10))
+    plt.imshow(wc, interpolation="bilinear")
+    plt.axis("off")
+    plt.show()

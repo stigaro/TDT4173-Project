@@ -2,19 +2,15 @@ import os
 import csv
 import pickle
 from sys import path
-import nltk
-from nltk.util import pr
 import numpy as np
-from nltk import pos_tag, sent_tokenize, wordpunct_tokenize
-from nltk import TweetTokenizer
+
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import Tokenizer
+from pycontractions import Contractions
 
-from src.util import string_label_to_list_label, listemize_input
+from src.util import string_label_to_list_label, listemize_input, timeit
 from src.util.constants import *
-
-nltk.download('averaged_perceptron_tagger')
-
+from src.modeling.tokenizers import *
 
 def load_raw_training_data():
     raw_data = []
@@ -105,10 +101,9 @@ class CSVTweetReader(object):
         self._unique_labels = None
 
         print(f'Instantiating with path: {input_path}')
-        print(f'Processed data will be outputted to {output_path}')
-        print()
         print(f'csv files found: {self.csv_files}')
         print()
+        print(f'Processed data will be outputted to {output_path}')
 
         assert len(self.paths) > 0, \
             "The provided directory/file contained no csv files"
@@ -182,17 +177,6 @@ class CSVTweetReader(object):
         
         for data in self.read(cleaner=cleaner):
             yield apply(data['Sentiment'])
-
-    def resolve_tokenizer(self, tknzr):
-        """
-        Returns a callable version of the tokenizer if not
-        already the case. Raises an axception if tokenizer
-        is neither a calleable or a string matching a 
-        tokeization member og this class.
-        """
-        if not callable(tknzr):
-            tknzr = getattr(CSVTweetReader, f'{tknzr}_tokenizer')
-        return tknzr
     
     def tokenize(self, fileids, tokenizer):
         """Performs the tokenization according to tokenizer"""
@@ -213,6 +197,7 @@ class CSVTweetReader(object):
         
     def save(self, path, tknzd):
         """Save and overwrite contents of filename"""
+        os.makedirs(os.path.dirname(path), exist_ok= True)
         with open(path, 'wb+') as f:  # wb+ overwrites
             pickle.dump(tknzd, f)
     
@@ -221,7 +206,8 @@ class CSVTweetReader(object):
         # Sort and stringify to create reproduceable key
         return str(sorted(csvs)) + str(sorted(fileids))
     
-    def get_tokenized(self, fileids, tknzr):
+    @timeit
+    def tokenized(self, fileids= None, tknzr= nltk_tweet_tokenizer):
         """
         Retrieves the tokenized dataset from a pickled file if exists.
         If not, tokenizes, saves, and finally returns it.
@@ -233,7 +219,7 @@ class CSVTweetReader(object):
         
         try:
             tknzd = file_contents[idx]
-            print(f'Retrieving existing tokenised dataset from \n {filepath}')
+            print(f'Retrieved existing tokenised dataset from \n {file_path}')
             
         except Exception as e:
             print(f'Tokenizing {self.csv_files} with {tknzr.__name__} for the first time.')
@@ -241,44 +227,14 @@ class CSVTweetReader(object):
             tknzd = list(self.tokenize(fileids, tknzr))
             file_contents[idx] = tknzd  # Update
             self.save(file_path, file_contents)
-            print(f'Result saved to {file_path}')
+            print(f'Result saved to {file_path} under key: {idx}')
         
         return tknzd
-
-    def tokenized(self, fileids=None, tknzr= 'nltk_wordpunct'):
-        """
-        Returns a generator of tokenized texts, which are lists of sentences,
-        which in turn are lists of part-of-speech tagged tokens (tuples).
-        
-            Args:
-                tknzr (str | func): A string or calleable specifying 
-                    static members of this class.
-        """
-        tokenizer = self.resolve_tokenizer(tknzr)
-        return self.get_tokenized(fileids, tokenizer)
-        
-    @staticmethod
-    def nltk_tweet_tokenizer(text):
-        tknzr = TweetTokenizer(reduce_len= True, strip_handles= True)
-        return tknzr.tokenize(text)
-    
-    @staticmethod
-    def nltk_wordpunct_tokenizer(text):
-        return wordpunct_tokenize(text)
-
-    @staticmethod
-    def nltk_sent_tweet_tokenizer(text):
-        tknze = TweetTokenizer(reduce_len=True, strip_handles=True).tokenize
-
-        return [
-            pos_tag(tknze(sent))
-            for sent in sent_tokenize(text)
-        ]
     
     _EXCLUDE = {
-        'get_tokenized', 'get_id', 'save', 'load', 
-        'tokenize', 'resolve_tokenizer', 'get_str_from_tknzr',
-        'get_tknzr_from_str', 'prepare'
+        'get_id', 'save', 'load', 
+        'tokenize', 'get_str_from_tknzr',
+        'prepare'
     }
     
     #__all__ = [k for k in globals() if k not in _EXCLUDE and not k.startswith('_')]
@@ -304,11 +260,8 @@ if __name__ == "__main__":
         print('Raw:')
         print(data)
         print()
-        print('Cleaned:')
-        print()
-        print()
-        print('tokenized & cleaned')
+        print('tokenized: ')
         print([
             tkn
-            for tkn in reader.nltk_sent_tweet_tokenizer(data)
+            for tkn in nltk_sent_tweet_tokenizer(data)
         ])

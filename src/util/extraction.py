@@ -26,16 +26,10 @@ class WordLexicolizer(BaseEstimator, TransformerMixin):
 	and a document length limited/padded to doclen
 	"""
 
-    def __init__(self, nfeatures=100000, doclen=60, normalizers=[]):
+    def __init__(self, nfeatures=100000, doclen=60):
         self.nfeatures = nfeatures
         self.doclen = doclen
-        self.normalizers = normalizers
         self.lexicon = None
-
-    def normalize(self, doc):
-        for norm in self.normalizers:
-            doc = norm(doc)
-        return doc
 
     def get_lexicon(self, norm_docs):
         """
@@ -58,15 +52,13 @@ class WordLexicolizer(BaseEstimator, TransformerMixin):
         ]
 
     def fit(self, documents, y=None):
-        docs = [list(self.normalize(doc)) for doc in documents]
-        self.lexicon = self.get_lexicon(docs)
+        self.lexicon = self.get_lexicon(documents)
         print('The most common word according to the encoding is: ')
         print([t[0] for t in sorted(self.lexicon.items(), key=lambda i: i[1])][:100])
         return self
 
     def transform(self, documents):
-        docs = [self.normalize(doc) for doc in documents]
-        clipped = [list(self.clip(doc)) for doc in docs]
+        clipped = [list(self.clip(doc)) for doc in documents]
         return sequence.pad_sequences(clipped, maxlen=self.doclen)
 
 

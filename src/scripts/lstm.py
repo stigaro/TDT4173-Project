@@ -13,9 +13,11 @@ from keras.wrappers.scikit_learn import KerasClassifier
 from keras.layers import Dense, LSTM, Dropout
 from keras.optimizers import Adam
 
+from src.modeling.tokenizers import nltk_sent_tweet_tokenizer
+from src.modeling.normalizers import TweetNormalizer
 from src.util.extraction import WordLexicolizer
 from src.util.loading import CSVTweetReader
-from src.util import digitize, random_sample
+from src.util import random_sample
 from src.util.constants import *
 
 from matplotlib import pyplot as plt
@@ -25,7 +27,7 @@ import nltk
 corpus = CSVTweetReader(input_path= PATH_TO_RAW_TRAIN_DATA,
                         output_path= CLEAN_DATA_PATH)
 
-X = list(corpus.tokenized(tknzr= 'nltk_tweet'))
+X = list(corpus.tokenized(tknzr= nltk_sent_tweet_tokenizer))
 y = list(corpus.labels(digitized= True))
 
 N_FEATURES = 8000  # I.e. # of words known to the encoding
@@ -38,7 +40,7 @@ def build_lstm():
     lstm.add(Dropout(0.5))
     lstm.add(LSTM(units=100, activation= 'sigmoid'))
     lstm.add(Dropout(0.5))
-    lstm.add(Dense(N_CLASSES, activation='softmax'))
+    lstm.add(Dense(N_CLASSES, activation= 'softmax'))
     lstm.compile(
         loss='categorical_crossentropy', 
         optimizer= Adam(learning_rate= 0.01),
@@ -48,9 +50,11 @@ def build_lstm():
     return lstm
 
 model = Pipeline([
-    ('tokens', WordLexicolizer(nfeatures=N_FEATURES,
-                             doclen=DOC_LEN,
-                             normalizers=[])),
+    ('nrmlzr', TweetNormalizer()),
+
+    ('vctrzr', WordLexicolizer(nfeatures=N_FEATURES,
+                               doclen=DOC_LEN)),
+                            
     ('nn', KerasClassifier(build_fn=build_lstm,
                            epochs=10,
                            batch_size=128))
