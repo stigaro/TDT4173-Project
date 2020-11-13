@@ -70,4 +70,11 @@ results.save_per_class_roc_curves(PATH_TO_RESULT_GRU_SIMPLE)
 results.save_confusion_matrix(PATH_TO_RESULT_GRU_SIMPLE)
 results.save_per_class_metrics(PATH_TO_RESULT_GRU_SIMPLE)
 results.save_macro_averaged_metrics(PATH_TO_RESULT_GRU_SIMPLE)
-results.save_best_hyperparameters(best_hyperparameters, PATH_TO_RESULT_GRU_SIMPLE)
+
+# Save the best hyperparameters
+with open(PATH_TO_RESULT_GRU_SIMPLE + '/' + 'best_hyperparameters.txt', 'w') as file:
+    file.write('embedding_output_dim: {:.5f}\n'.format(best_hyperparameters.get('embedding_output_dim')))
+    file.write('gru_hidden_units: {:.5f}\n'.format(best_hyperparameters.get('gru_hidden_units')))
+    file.write('gru_dropout: {:.5f}\n'.format(best_hyperparameters.get('gru_dropout')))
+    file.write('learning_rate: {:.5f}\n'.format(best_hyperparameters.get('learning_rate')))
+    file.close()

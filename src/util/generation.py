@@ -75,3 +75,48 @@ class Generator:
         )
 
         return model
+
+    @staticmethod
+    def generate_mlp_model(hyperparameters):
+        """
+        Function that generates a bidirectional GRU model from hyperparameters
+        :return: The GRU model
+        """
+        model = keras.Sequential()
+
+        model.add(keras.Input(shape=MAXIMUM_SENTENCE_LENGTH))
+
+        model.add(keras.layers.Dense(
+            hyperparameters.Int('hidden_layer_1_units', min_value=128, max_value=1024, step=128),
+            activation=keras.activations.relu
+        ))
+        model.add(keras.layers.Dropout(hyperparameters.Float('dropout_Rate', min_value=0, max_value=0.4, step=0.1)))
+
+        model.add(keras.layers.Dense(
+            hyperparameters.Int('hidden_layer_2_units', min_value=64, max_value=512, step=64),
+            activation=keras.activations.relu
+        ))
+        model.add(keras.layers.Dropout(hyperparameters.Float('dropout_Rate', min_value=0, max_value=0.4, step=0.1)))
+
+        model.add(keras.layers.Dense(
+            hyperparameters.Int('hidden_layer_3_units', min_value=32, max_value=256, step=32),
+            activation=keras.activations.relu
+        ))
+        model.add(keras.layers.Dropout(hyperparameters.Float('dropout_Rate', min_value=0, max_value=0.4, step=0.1)))
+
+        model.add(keras.layers.Dense(
+            hyperparameters.Int('hidden_layer_4_units', min_value=16, max_value=128, step=16),
+            activation=keras.activations.relu
+        ))
+        model.add(keras.layers.Dropout(hyperparameters.Float('dropout_Rate', min_value=0, max_value=0.4, step=0.1)))
+
+        model.add(keras.layers.Dense(5))
+
+        hp_learning_rate = hyperparameters.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4, 1e-5])
+        model.compile(
+            optimizer=keras.optimizers.Adam(learning_rate=hp_learning_rate),
+            loss=keras.losses.BinaryCrossentropy(from_logits=True),
+            metrics=['accuracy']
+        )
+
+        return model
