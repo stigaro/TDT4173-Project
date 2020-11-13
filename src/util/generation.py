@@ -1,14 +1,50 @@
 import tensorflow as tf
 from tensorflow import keras
+from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout
 from transformers import TFBertForSequenceClassification
 
-from src.util.constants import MAXIMUM_SENTENCE_LENGTH, NUMBER_OF_WORDS
-
+from src.util.constants import MAXIMUM_SENTENCE_LENGTH, NUMBER_OF_WORDS, NUM_CLASSES
+import src.util.constants as CONST
 
 class Generator:
     """
     No state class that contains functions which generate models
     """
+
+    @staticmethod
+    def generate_lstm_model(hp):
+        """
+        Samples a compiled lstm keras model.
+
+        Args:
+            hp: hyperparameter object passed in by Keras
+            Hyperband api.
+        """
+        
+        lstm = keras.Sequential()
+        
+        lstm.add(Embedding(NUMBER_OF_WORDS + 1,
+                           hp.Int('embedding_output_dim', min_value=8, max_value=32, step=8),
+                           input_length= MAXIMUM_SENTENCE_LENGTH))
+        
+        lstm.add(Dropout(hp.Float('first_dropout_rate', min_value= 0, max_value= 1.0, step= 0.2)))
+        
+        lstm.add(LSTM(units= hp.Int('lstm_hidden_units', min_value=10, max_value=200, step=10),
+                      activation= 'sigmoid'))
+
+        lstm.add(Dropout(hp.Float('second_dropout_rate', min_value= 0, max_value= 1.0, step= 0.2)))
+
+        lstm.add(Dense(NUM_CLASSES))
+
+        lstm.compile(
+            loss= keras.losses.CategoricalCrossentropy(from_logits= True), 
+            optimizer= keras.optimizers.Adam(
+                learning_rate=hp.Choice('learning_rate', values= [1e-2, 5e-3, 1e-3, 5e-4, 1e-4])
+            ),
+            metrics=['accuracy']
+        )
+
+        return lstm
 
     @staticmethod
     def generate_simple_gru_model(hyperparameters):
@@ -37,8 +73,8 @@ class Generator:
         hp_learning_rate = hyperparameters.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4, 1e-5])
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=hp_learning_rate),
-            loss=keras.losses.BinaryCrossentropy(from_logits=True),
-            metrics=['accuracy']
+            loss= keras.losses.CategoricalCrossentropy(from_logits=True),
+            metrics= ['accuracy']
         )
 
         return model

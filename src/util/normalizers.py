@@ -9,6 +9,7 @@ from unicodedata import category as unicat
 
 from src.util import timeit
 
+# Download data needed by nltk utilities
 nltk.download('wordnet')
 nltk.download('stopwords')
 nltk.download('punkt')
@@ -19,6 +20,7 @@ lemmatizer = nltk.stem.WordNetLemmatizer()
 stop_words = set(nltk.corpus.stopwords.words('english'))
 cont = Contractions(api_key= "glove-twitter-100")
 
+# Used by lemmatizer to determine lemma
 tags = {
     'N': wn.NOUN,
     'V': wn.VERB,
@@ -26,6 +28,10 @@ tags = {
     'J': wn.ADJ
 }
 
+# NOTE: All normalisation methods expect text to a list of
+# lists of (word, pos_tag) pairs (tuples).
+# This formar is the result of the nltk_sent_tweet_tokenizer
+# method in the src.modeling.tokenizers module.
 
 def remove_punct_words(text):
     return [
@@ -108,23 +114,21 @@ def regex_clean(text):
     return text
 
 class TweetNormalizer(TransformerMixin, BaseEstimator):
+    """
+    Normamizes tweets that are expected to be sent-tokenized,
+    word-tokenized and pos-tagged.
+    Default normalizers are:
+        - lowercasing
+        - remoce links
+        - remove puncuations
+        - expanded hashtags
+        - lemmatisation
+    These can be ovrrided by providing a list of normalisation
+    callbacks. See the src.modeling.normalizers module for examples on
+    these methods.
+    """
     def __init__(self, normalizers= None):
-        """
-        Normamizes tweets that are expected to be sent-tokenized,
-        word-tokenized and pos-tagged.
 
-        Default normalizers are:
-            - lowercasing
-            - remoce links
-            - remove puncuations
-            - expanded hashtags
-            - lemmatisation
-
-        These can be ovrrided by providing a list of normalisation
-        callbacks. See the src.modeling.normalizers module for examples on
-        these methods.
-        """
-        
         # Use defaults if not specified
         self.normalizers = normalizers if normalizers is not None else [
             lower,

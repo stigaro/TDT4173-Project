@@ -10,7 +10,7 @@ from pycontractions import Contractions
 
 from src.util import string_label_to_list_label, listemize_input, timeit
 from src.util.constants import *
-from src.modeling.tokenizers import *
+from src.util.tokenizers import *
 
 def load_raw_training_data():
     raw_data = []
@@ -108,7 +108,7 @@ class CSVTweetReader(object):
         assert len(self.paths) > 0, \
             "The provided directory/file contained no csv files"
 
-    def read(self, reader=csv.DictReader, cleaner=lambda r: r, dir_or_filename=None):
+    def read(self, reader=csv.DictReader, cleaner=lambda r: r, dir_or_filename= None):
         """
         Yields processed/cleaned datapoints from the csv files under
         dir_or_filenmae.
@@ -120,13 +120,12 @@ class CSVTweetReader(object):
                 cleaner (func): callback that accepts individual rows from reader
                 and returns a processed/cleaned datastructure from it.
         """
-        # Return everything under root if nothing is specified
-        if not dir_or_filename:
+        if dir_or_filename is None:
             dir_or_filename = os.path.dirname(self.root)
-
+        
         for path in self.paths:
             if dir_or_filename in path:  # Only return contents of relevant files
-                with open(path, encoding="ISO-8859-1") as csvfile:
+                with open(path, encoding= "ISO-8859-1") as csvfile:
                     for i, row in enumerate(reader(csvfile)):
                         try:
                             row['id'] = i
@@ -147,18 +146,18 @@ class CSVTweetReader(object):
                 return data
         return cleaner
 
-    def texts(self, fileids=None):
+    def texts(self, fileids= None):
         """
         Returns the unprocessed tweet texts
         """
         cleaner = self.prepare(fileids, 'id')
-        for data in self.read(cleaner=cleaner):
+        for data in self.read(cleaner= cleaner):
             yield data['OriginalTweet']
 
-    def fileids(self, categories=None):
+    def fileids(self, categories= None):
         """Returns the tweet ids"""
         cleaner = self.prepare(categories, "Sentiment")
-        for data in self.read(cleaner=cleaner):
+        for data in self.read(cleaner= cleaner):
             yield data['id']
             
     @property
@@ -170,7 +169,7 @@ class CSVTweetReader(object):
             )
         return self._unique_labels
     
-    def labels(self, fileids=None, digitized= False):
+    def labels(self, fileids= None, digitized= False):
         """Return the labels for the fileids"""
         cleaner = self.prepare(fileids, 'id')
         apply = (lambda sent: self.unique_labels[sent]) if digitized else (lambda x: x)
@@ -180,9 +179,11 @@ class CSVTweetReader(object):
     
     def tokenize(self, fileids, tokenizer):
         """Performs the tokenization according to tokenizer"""
-        for text in self.texts(fileids=fileids):
-            yield tokenizer(text)
-            
+        return [
+            tokenizer(text)
+            for text in self.texts(fileids=fileids)
+        ]
+        
     def load(self, path):
         """
         Returns dict under filename if exists.
@@ -251,8 +252,6 @@ if __name__ == "__main__":
     print()
     print(df.info())
     
-    
-
     # Check results from tokenisation by inspection
     for i, data in enumerate(reader.texts()):
         if i >= 10: break

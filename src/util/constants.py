@@ -22,15 +22,17 @@ PATH_TO_RESULT_TRANSFORMER_BERT: str = './Resources/Results/Transformer/BERT'
 
 MAXIMUM_SENTENCE_LENGTH: int = 344
 NUMBER_OF_WORDS = 10000
-HYPER_PARAMETER_PROJECT_NAME = 'Hyperparameter Search'
+NUM_CLASSES = 5
+HYPER_PARAMETER_PROJECT_NAME = 'hyperparameter_search'
 
 import os
-CLEAN_DATA_PATH: str = os.path.normpath(
-    os.path.join(
-        __file__,
-        '../../..',
-        'Resources',
-        'Data',
-        'Clean'
-    )
-)
+ROOT_PATH: str = os.path.normpath(os.path.join(__file__, '../../..'))
+RESOURCE_PATH: str = os.path.join(ROOT_PATH, 'Resources')
+DATA_PATH = os.path.join(RESOURCE_PATH, 'Data')
+CLEAN_DATA_PATH: str = os.path.join(DATA_PATH, 'Clean')
+MODELS_PATH: str = os.path.join(RESOURCE_PATH, 'Models')
+LSTM_MODEL_PATH: str = os.path.join(MODELS_PATH, 'LSTM')
+RESULTS_PATH: str = os.path.join(RESOURCE_PATH, 'Results')
+LSMT_RESULTS_PATH: str = os.path.join(RESULTS_PATH, 'LSTM')
+LSTM_CHECKPOINT_PATH: str = os.path.join(LSTM_MODEL_PATH, 'Checkpoints')
+LSTM_FINAL_PATH: str = os.path.join(LSTM_MODEL_PATH, 'Saved')

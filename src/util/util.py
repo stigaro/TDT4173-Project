@@ -79,6 +79,8 @@ def string_label_to_list_label(label: str):
         'EXTREMELY POSITIVE': [0, 0, 0, 0, 1],
     }[label.upper()]
 
+def label_to_int(label: str):
+    return string_label_to_list_label(label).index(1)
 
 def softmax_output_to_list_label_by_maximum(predictions: np.ndarray):
     """
