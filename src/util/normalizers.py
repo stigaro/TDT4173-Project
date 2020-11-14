@@ -14,11 +14,11 @@ nltk.download('wordnet')
 nltk.download('stopwords')
 nltk.download('punkt')
 
-seg_tw = Segmenter(corpus= 'twitter')
+seg_tw = Segmenter(corpus='twitter')
 stemmer = nltk.stem.SnowballStemmer('english')
 lemmatizer = nltk.stem.WordNetLemmatizer()
 stop_words = set(nltk.corpus.stopwords.words('english'))
-cont = Contractions(api_key= "glove-twitter-100")
+cont = Contractions(api_key="glove-twitter-100")
 
 # Used by lemmatizer to determine lemma
 tags = {
@@ -27,6 +27,7 @@ tags = {
     'R': wn.ADV,
     'J': wn.ADJ
 }
+
 
 # NOTE: All normalisation methods expect text to a list of
 # lists of (word, pos_tag) pairs (tuples).
@@ -39,6 +40,7 @@ def remove_punct_words(text):
         if not all(unicat(c).startswith('P') for c in token)
     ]
 
+
 def stemmer(text):
     """
     Uses nltk's snowballstemmer to stem english words
@@ -47,16 +49,19 @@ def stemmer(text):
         (stemmer.stem(str(word)), pt) for word, pt in text
     ]
 
+
 def lower(text):
     return [
-       ( token.lower(), pt) for token, pt in text
+        (token.lower(), pt) for token, pt in text
     ]
+
 
 def remove_stop_words(text):
     return [
         (token, pt) for token, pt in text
         if not token in stop_words
     ]
+
 
 def split_hashtags(text):
     """
@@ -74,11 +79,13 @@ def split_hashtags(text):
             new_text.append((token, pt))
     return new_text
 
+
 def remove_links(text):
     return [
         (token, pt) for token, pt in text
         if re.search('https?://\S+|www\.\S+', token) is None
     ]
+
 
 def tweet_preprocess(text):
     """Preprocess tokens according to tweet-preprocessor"""
@@ -86,11 +93,13 @@ def tweet_preprocess(text):
         (p.clean(token), pt) for token, pt in text
     ]
 
+
 def lemmatize(text):
     return [
         (lemmatizer.lemmatize(token, tags.get(pt[0], wn.NOUN)), pt)
         for token, pt in text
     ]
+
 
 def expand_contr(text):  # Extremely slow unfortunatly
     new_text = []
@@ -113,6 +122,7 @@ def regex_clean(text):
     text = re.sub('\w*\d\w*', '', text)
     return text
 
+
 class TweetNormalizer(TransformerMixin, BaseEstimator):
     """
     Normamizes tweets that are expected to be sent-tokenized,
@@ -127,7 +137,8 @@ class TweetNormalizer(TransformerMixin, BaseEstimator):
     callbacks. See the src.modeling.normalizers module for examples on
     these methods.
     """
-    def __init__(self, normalizers= None):
+
+    def __init__(self, normalizers=None):
 
         # Use defaults if not specified
         self.normalizers = normalizers if normalizers is not None else [
@@ -135,19 +146,19 @@ class TweetNormalizer(TransformerMixin, BaseEstimator):
             remove_links,
             remove_punct_words,
             split_hashtags,
-            #expand_contr,
+            # expand_contr,
             lemmatize
         ]
-    
-    def fit(self, X, y= None):
+
+    def fit(self, X, y=None):
         return self
-    
+
     def normalize(self, doc):
         for sent in doc:
             # Normalize with every normalizer
             for norm in self.normalizers:
                 sent = norm(sent)
-            
+
             # Yield evey token from normalized sent
             for token, pt in sent:
                 if token:
@@ -157,7 +168,7 @@ class TweetNormalizer(TransformerMixin, BaseEstimator):
         return [
             list(self.normalize(doc)) for doc in documents
         ]
-    
+
 
 if __name__ == "__main__":
     from src.util.constants import (CLEAN_DATA_PATH,
@@ -166,12 +177,12 @@ if __name__ == "__main__":
     from src.util.loading import CSVTweetReader
     from src.modeling.tokenizers import nltk_sent_tweet_tokenizer
 
-    reader = CSVTweetReader(input_path= PATH_TO_RAW_TRAIN_DATA,
-                            output_path= CLEAN_DATA_PATH)
+    reader = CSVTweetReader(input_path=PATH_TO_RAW_TRAIN_DATA,
+                            output_path=CLEAN_DATA_PATH)
 
     transformer = TweetNormalizer()
 
-    processed = reader.tokenized(tknzr= nltk_sent_tweet_tokenizer)
+    processed = reader.tokenized(tknzr=nltk_sent_tweet_tokenizer)
 
     transformed = transformer.transform(processed)
 
@@ -184,11 +195,11 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     from nltk import FreqDist
 
-    #Frequency of words
+    # Frequency of words
     fdist = FreqDist(token for doc in transformed for token in doc)
-    #WordCloud
+    # WordCloud
     wc = WordCloud(width=800, height=400, max_words=50).generate_from_frequencies(fdist)
-    plt.figure(figsize=(12,10))
+    plt.figure(figsize=(12, 10))
     plt.imshow(wc, interpolation="bilinear")
     plt.axis("off")
     plt.show()
