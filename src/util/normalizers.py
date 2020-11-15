@@ -190,16 +190,10 @@ if __name__ == "__main__":
         if i >= 10: break
         print(i, ':')
         print(list(t))
-
-    from wordcloud import WordCloud
-    import matplotlib.pyplot as plt
-    from nltk import FreqDist
-
-    # Frequency of words
-    fdist = FreqDist(token for doc in transformed for token in doc)
-    # WordCloud
-    wc = WordCloud(width=800, height=400, max_words=50).generate_from_frequencies(fdist)
-    plt.figure(figsize=(12, 10))
-    plt.imshow(wc, interpolation="bilinear")
-    plt.axis("off")
-    plt.show()
+        
+    
+    
+    from src.util import plot_wordcloud
+    
+    tokens = [token for doc in transformed for token in doc]  # flatten
+    plot_wordcloud(tokens)
