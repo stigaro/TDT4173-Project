@@ -113,13 +113,6 @@ def random_sample(x, y, norm_size):
     ]
     return [x[i] for i in rand_idxs], [y[i] for i in rand_idxs]
 
-# Define members visible outside of module
-_EXCLUDE = {"np", "time", "wraps"}
-__all__ = [
-    k for k in globals()
-    if k not in _EXCLUDE and not k.startswith('_')
-]
-
 def plot_wordcloud(tokens, max_words= 50):
     """
     Plots a wordlcloud of the 50 most common words from tokens
@@ -135,3 +128,10 @@ def plot_wordcloud(tokens, max_words= 50):
     plt.imshow(wc, interpolation="bilinear")
     plt.axis("off")
     plt.show()
+    
+# Define members visible outside of module
+_EXCLUDE = {"np", "time", "wraps"}
+__all__ = [
+    k for k in globals()
+    if k not in _EXCLUDE and not k.startswith('_')
+]

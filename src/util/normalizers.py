@@ -40,7 +40,6 @@ def remove_punct_words(text):
         if not all(unicat(c).startswith('P') for c in token)
     ]
 
-
 def stemmer(text):
     """
     Uses nltk's snowballstemmer to stem english words
@@ -92,7 +91,6 @@ def tweet_preprocess(text):
     return [
         (p.clean(token), pt) for token, pt in text
     ]
-
 
 def lemmatize(text):
     return [
@@ -175,7 +173,7 @@ if __name__ == "__main__":
                                     PATH_TO_RAW_TRAIN_DATA)
 
     from src.util.loading import CSVTweetReader
-    from src.modeling.tokenizers import nltk_sent_tweet_tokenizer
+    from src.util.tokenizers import nltk_sent_tweet_tokenizer
 
     reader = CSVTweetReader(input_path=PATH_TO_RAW_TRAIN_DATA,
                             output_path=CLEAN_DATA_PATH)
