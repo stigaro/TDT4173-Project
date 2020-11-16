@@ -12,7 +12,6 @@ Various utility functions for loading in datasets,
 both raw, tokenised and fully preprocessed.
 """
 
-
 def get_train_reader():
     return CSVTweetReader(
         input_path= CONST.PATH_TO_RAW_TRAIN_DATA,
@@ -32,6 +31,7 @@ def get_all_tweets_reader():
     )
 
 def get_train_test_sets():
+    """Returns completely preprocessed train and test sets"""
     train = get_train_reader()
     test = get_test_reader()
 
@@ -48,8 +48,5 @@ def get_train_test_sets():
     train_y = np.array([string_label_to_list_label(l) for l in train.labels()])
     test_x = norm_and_vectorize.transform(test_tknzd_txts)  # NOTE: Use transform and NOT fit_transform here
     test_y = np.array([string_label_to_list_label(l) for l in test.labels()])
-    
-    print(train_x)
-    print(train_y)
 
     return train_x, train_y, test_x, test_y

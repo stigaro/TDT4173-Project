@@ -40,7 +40,6 @@ def remove_punct_words(text):
         if not all(unicat(c).startswith('P') for c in token)
     ]
 
-
 def stemmer(text):
     """
     Uses nltk's snowballstemmer to stem english words
@@ -92,7 +91,6 @@ def tweet_preprocess(text):
     return [
         (p.clean(token), pt) for token, pt in text
     ]
-
 
 def lemmatize(text):
     return [
@@ -175,7 +173,7 @@ if __name__ == "__main__":
                                     PATH_TO_RAW_TRAIN_DATA)
 
     from src.util.loading import CSVTweetReader
-    from src.modeling.tokenizers import nltk_sent_tweet_tokenizer
+    from src.util.tokenizers import nltk_sent_tweet_tokenizer
 
     reader = CSVTweetReader(input_path=PATH_TO_RAW_TRAIN_DATA,
                             output_path=CLEAN_DATA_PATH)
@@ -190,16 +188,10 @@ if __name__ == "__main__":
         if i >= 10: break
         print(i, ':')
         print(list(t))
-
-    from wordcloud import WordCloud
-    import matplotlib.pyplot as plt
-    from nltk import FreqDist
-
-    # Frequency of words
-    fdist = FreqDist(token for doc in transformed for token in doc)
-    # WordCloud
-    wc = WordCloud(width=800, height=400, max_words=50).generate_from_frequencies(fdist)
-    plt.figure(figsize=(12, 10))
-    plt.imshow(wc, interpolation="bilinear")
-    plt.axis("off")
-    plt.show()
+        
+    
+    
+    from src.util import plot_wordcloud
+    
+    tokens = [token for doc in transformed for token in doc]  # flatten
+    plot_wordcloud(tokens)

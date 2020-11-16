@@ -4,6 +4,10 @@ from functools import wraps
 from unicodedata import category as unicat
 import numpy as np
 
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+from nltk import FreqDist
+
 def timeit(func):
     """Times a function and prints it"""
 
@@ -109,6 +113,22 @@ def random_sample(x, y, norm_size):
     ]
     return [x[i] for i in rand_idxs], [y[i] for i in rand_idxs]
 
+def plot_wordcloud(tokens, max_words= 50):
+    """
+    Plots a wordlcloud of the 50 most common words from tokens
+    """
+
+    # Frequency of words
+    fdist = FreqDist(tokens)
+    # WordCloud
+    wc = WordCloud(width=800,
+                   height=400,
+                   max_words= max_words).generate_from_frequencies(fdist)
+    plt.figure(figsize=(12, 10))
+    plt.imshow(wc, interpolation="bilinear")
+    plt.axis("off")
+    plt.show()
+    
 # Define members visible outside of module
 _EXCLUDE = {"np", "time", "wraps"}
 __all__ = [
