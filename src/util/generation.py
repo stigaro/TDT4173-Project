@@ -57,7 +57,7 @@ class Generator:
 
         hp_output_dim = hyperparameters.Int('embedding_output_dim', min_value=8, max_value=32, step=8)
         model.add(keras.layers.Embedding(
-            input_dim=NUMBER_OF_WORDS,
+            input_dim=NUMBER_OF_WORDS + 1,
             output_dim=hp_output_dim,
             input_length=MAXIMUM_SENTENCE_LENGTH
         ))
@@ -90,7 +90,7 @@ class Generator:
 
         hp_output_dim = hyperparameters.Int('embedding_output_dim', min_value=8, max_value=32, step=8)
         model.add(keras.layers.Embedding(
-            input_dim=NUMBER_OF_WORDS,
+            input_dim=NUMBER_OF_WORDS + 1,
             output_dim=hp_output_dim,
             input_length=MAXIMUM_SENTENCE_LENGTH
         ))

@@ -7,6 +7,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import Tokenizer
 
 from src.util.constants import *
+from src.util.data import get_train_test_sets
 from src.util.extraction import ResultsExtractor
 from src.util.generation import Generator
 from src.util.loading import load_simple_sentence_dataset
@@ -16,20 +17,7 @@ physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], enable=True)
 
 # Load the dataset
-train_x, train_y, test_x, test_y = load_simple_sentence_dataset()
-
-# Tokenize the sentences
-tokenizer = Tokenizer(num_words=NUMBER_OF_WORDS, oov_token=True)
-tokenizer.fit_on_texts(train_x.tolist())
-train_x = tokenizer.texts_to_sequences(train_x)
-test_x = tokenizer.texts_to_sequences(test_x)
-
-# Adds padding to tokenized sentences not at max length
-# and reshape labels to work with tensorflow
-train_x = pad_sequences(train_x, maxlen=MAXIMUM_SENTENCE_LENGTH)
-train_y = np.asarray(train_y).astype('float32').reshape((-1, 5))
-test_x = pad_sequences(test_x, maxlen=MAXIMUM_SENTENCE_LENGTH)
-test_y = np.asarray(test_y).astype('float32').reshape((-1, 5))
+train_x, train_y, test_x, test_y = get_train_test_sets()
 
 # Define a hyperband for searching hyperparameters
 # (If search has already been done it will simply load from the directory)
@@ -61,7 +49,7 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(
 
 # Fit the model and save it
 model.fit(train_x, train_y, epochs=5, batch_size=64, callbacks=[cp_callback], validation_split=0.10)
-model.save(PATH_TO_MODEL_GRU_SIMPLE_SAVE)
+model.save(PATH_TO_MODEL_MLP_SAVE)
 
 # Save the results
 predictions = model.predict(x=test_x)

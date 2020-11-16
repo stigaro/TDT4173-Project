@@ -1,4 +1,4 @@
-embedding_output_dim: 8.00000
-gru_hidden_units: 72.00000
-gru_dropout: 0.00000
-learning_rate: 0.01000
+embedding_output_dim: 16.00000
+gru_hidden_units: 88.00000
+gru_dropout: 0.20000
+learning_rate: 0.00100
