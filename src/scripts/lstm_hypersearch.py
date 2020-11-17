@@ -60,7 +60,5 @@ results.save_macro_averaged_metrics(CONST.LSTM_RESULTS_PATH)
 # Save the best hyperparameterss
 best_param_path = os.path.join(CONST.LSTM_RESULTS_PATH, 'best_hyperparameters.txt')
 with open(best_param_path, 'w') as f:
-    for param in ['embedding_output_dim', 'lstm_hidden_units',
-                  'first_dropout_rate', 'second_dropout_rate',
-                  'learning_rate']:
+    for param in ['embedding_output_dim', 'lstm_hidden_units', 'lstm_dropout', 'learning_rate']:
         f.write(param + ': {:.5f}\n'.format(best_params.get(param)))

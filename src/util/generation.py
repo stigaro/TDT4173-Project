@@ -28,12 +28,10 @@ class Generator:
                            hp.Int('embedding_output_dim', min_value=8, max_value=32, step=8),
                            input_length=MAXIMUM_SENTENCE_LENGTH))
 
-        lstm.add(Dropout(hp.Float('first_dropout_rate', min_value=0, max_value=0.5, step=0.1)))
-
-        lstm.add(LSTM(units=hp.Int('lstm_hidden_units', min_value=8, max_value=64, step=8),
-                      activation='sigmoid'))
-
-        lstm.add(Dropout(hp.Float('second_dropout_rate', min_value=0, max_value=0.5, step=0.1)))
+        lstm.add(LSTM(
+            units=hp.Int('lstm_hidden_units', min_value=8, max_value=128, step=8),
+            dropout=hp.Float('lstm_dropout', min_value=0, max_value=0.5, step=0.1)
+        ))
 
         lstm.add(Dense(NUM_CLASSES))
 

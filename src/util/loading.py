@@ -12,6 +12,7 @@ from src.util import string_label_to_list_label, listemize_input, timeit
 from src.util.constants import *
 from src.util.tokenizers import *
 
+
 def load_raw_training_data():
     raw_data = []
     with open(PATH_TO_RAW_TRAIN_DATA, encoding='latin-1') as csv_file:
@@ -20,6 +21,7 @@ def load_raw_training_data():
         for row in reader:
             raw_data.append(row)
     return raw_data
+
 
 def load_raw_testing_data():
     raw_data = []
@@ -52,6 +54,7 @@ def load_simple_sentence_dataset():
     test_y = np.array([y for (x, y) in dataset["test"]]).astype(np.int)
 
     return train_x, train_y, test_x, test_y
+
 
 def load_simple_word_dataset():
     training_data = load_raw_training_data()
@@ -96,7 +99,7 @@ class CSVTweetReader(object):
             for dirpath, dirnames, filenames in os.walk(self.root)
             for filename in filenames if os.path.splitext(filename)[1] == '.csv'
         ] if os.path.isdir(input_path) else [input_path]
-        
+
         self.csv_files = list(map(os.path.basename, self.paths))
         self._unique_labels = None
 
@@ -108,7 +111,7 @@ class CSVTweetReader(object):
         assert len(self.paths) > 0, \
             "The provided directory/file contained no csv files"
 
-    def read(self, reader=csv.DictReader, cleaner=lambda r: r, dir_or_filename= None):
+    def read(self, reader=csv.DictReader, cleaner=lambda r: r, dir_or_filename=None):
         """
         Yields processed/cleaned datapoints from the csv files under
         dir_or_filenmae.
@@ -122,10 +125,10 @@ class CSVTweetReader(object):
         """
         if dir_or_filename is None:
             dir_or_filename = os.path.dirname(self.root)
-        
+
         for path in self.paths:
             if dir_or_filename in path:  # Only return contents of relevant files
-                with open(path, encoding= "ISO-8859-1") as csvfile:
+                with open(path, encoding="ISO-8859-1") as csvfile:
                     for i, row in enumerate(reader(csvfile)):
                         try:
                             row['id'] = i
@@ -146,20 +149,20 @@ class CSVTweetReader(object):
                 return data
         return cleaner
 
-    def texts(self, fileids= None):
+    def texts(self, fileids=None):
         """
         Returns the unprocessed tweet texts
         """
         cleaner = self.prepare(fileids, 'id')
-        for data in self.read(cleaner= cleaner):
+        for data in self.read(cleaner=cleaner):
             yield data['OriginalTweet']
 
-    def fileids(self, categories= None):
+    def fileids(self, categories=None):
         """Returns the tweet ids"""
         cleaner = self.prepare(categories, "Sentiment")
-        for data in self.read(cleaner= cleaner):
+        for data in self.read(cleaner=cleaner):
             yield data['id']
-            
+
     @property
     def unique_labels(self):
         """Return the unique labels from the initialized dataset"""
@@ -168,22 +171,22 @@ class CSVTweetReader(object):
                 (x, i + 1) for i, x in enumerate(sorted(set(self.labels())))
             )
         return self._unique_labels
-    
-    def labels(self, fileids= None, digitized= False):
+
+    def labels(self, fileids=None, digitized=False):
         """Return the labels for the fileids"""
         cleaner = self.prepare(fileids, 'id')
         apply = (lambda sent: self.unique_labels[sent]) if digitized else (lambda x: x)
-        
+
         for data in self.read(cleaner=cleaner):
             yield apply(data['Sentiment'])
-    
+
     def tokenize(self, fileids, tokenizer):
         """Performs the tokenization according to tokenizer"""
         return [
             tokenizer(text)
             for text in self.texts(fileids=fileids)
         ]
-        
+
     def load(self, path):
         """
         Returns dict under filename if exists.
@@ -195,20 +198,20 @@ class CSVTweetReader(object):
                 return pickle.load(f)
         except Exception as e:
             return {}
-        
+
     def save(self, path, tknzd):
         """Save and overwrite contents of filename"""
-        os.makedirs(os.path.dirname(path), exist_ok= True)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, 'wb+') as f:  # wb+ overwrites
             pickle.dump(tknzd, f)
-    
+
     @listemize_input
     def get_id(self, csvs, fileids):
         # Sort and stringify to create reproduceable key
         return str(sorted(csvs)) + str(sorted(fileids))
-    
+
     @timeit
-    def tokenized(self, fileids= None, tknzr= nltk_tweet_tokenizer):
+    def tokenized(self, fileids=None, tknzr=nltk_tweet_tokenizer):
         """
         Retrieves the tokenized dataset from a pickled file if exists.
         If not, tokenizes, saves, and finally returns it.
@@ -217,11 +220,11 @@ class CSVTweetReader(object):
                                  f'{tknzr.__name__[:-10]}.pickle')
         file_contents = self.load(file_path)
         idx = self.get_id(self.csv_files, fileids)
-        
+
         try:
             tknzd = file_contents[idx]
             print(f'Retrieved existing tokenised dataset from \n {file_path}')
-            
+
         except Exception as e:
             print(f'Tokenizing {self.csv_files} with {tknzr.__name__} for the first time.')
             print('This might take some time...')
@@ -229,33 +232,34 @@ class CSVTweetReader(object):
             file_contents[idx] = tknzd  # Update
             self.save(file_path, file_contents)
             print(f'Result saved to {file_path} under key: {idx}')
-        
+
         return tknzd
-    
+
     _EXCLUDE = {
-        'get_id', 'save', 'load', 
+        'get_id', 'save', 'load',
         'tokenize', 'get_str_from_tknzr',
         'prepare'
     }
-    
-    #__all__ = [k for k in globals() if k not in _EXCLUDE and not k.startswith('_')]
-    
+
+    # __all__ = [k for k in globals() if k not in _EXCLUDE and not k.startswith('_')]
+
+
 if __name__ == "__main__":
     import pandas as pd
-    
+
     reader = CSVTweetReader(input_path=PATH_TO_RAW_TRAIN_DATA,
                             output_path=CLEAN_DATA_PATH)
-    
+
     # Verify data reader function
-    df = pd.DataFrame(data= reader.read())
+    df = pd.DataFrame(data=reader.read())
     print(df)
     print()
     print(df.info())
-    
+
     # Check results from tokenisation by inspection
     for i, data in enumerate(reader.texts()):
         if i >= 10: break
-        print(i,': ')
+        print(i, ': ')
         print('Raw:')
         print(data)
         print()

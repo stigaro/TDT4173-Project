@@ -1,5 +1,4 @@
-embedding_output_dim: 32.00000
-lstm_hidden_units: 40.00000
-first_dropout_rate: 0.40000
-second_dropout_rate: 0.40000
+embedding_output_dim: 8.00000
+lstm_hidden_units: 96.00000
+lstm_dropout: 0.10000
 learning_rate: 0.01000

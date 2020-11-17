@@ -2,14 +2,14 @@
 |-------------------+-------------------|
 | p                 |            759.60 |
 | n                 |           3038.40 |
-| tp                |            556.80 |
-| tn                |           2835.60 |
-| fn                |            202.80 |
-| fp                |            202.80 |
-| sensitivity       |              0.74 |
-| specificity       |              0.93 |
-| precision         |              0.75 |
-| accuracy          |              0.89 |
-| balanced-accuracy |              0.84 |
-| f1-score          |              0.74 |
-| mcc               |              0.68 |
+| tp                |            581.00 |
+| tn                |           2859.80 |
+| fn                |            178.60 |
+| fp                |            178.60 |
+| sensitivity       |              0.77 |
+| specificity       |              0.94 |
+| precision         |              0.78 |
+| accuracy          |              0.91 |
+| balanced-accuracy |              0.85 |
+| f1-score          |              0.77 |
+| mcc               |              0.71 |
