@@ -204,9 +204,8 @@ class ResultsExtractor:
         header = ["Metric", "Macro-Averaging"]
 
         row_list = []
-        for index, metric_name in enumerate(list(per_class_metrics[0].keys())):
+        for index, metric_name in enumerate(list(per_class_metrics[0].keys())[6:]): # [6:] to skip f, p, fp, ... , etc
             row_list.append([metric_name])
-
             macro_number = 0
             number_of_classes = len(per_class_metrics)
             for class_number in range(0, number_of_classes):
