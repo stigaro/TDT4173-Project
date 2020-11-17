@@ -13,30 +13,30 @@ x_train, y_train, x_test, y_test = get_train_test_sets()
 
 
 ###########################################Hyperparameter Tuning
-# tuner = kt.Hyperband(Generator.generate_rnn_simple,
-#                      objective='val_accuracy', max_epochs=5, factor=2, directory=model_path,
-#                      project_name='rnn_simple_hp')
-#
-# tuner.search(x_train, y_train, epochs=5, validation_split=0.10)
-#
-# tuned_hp = tuner.get_best_hyperparameters()[0]
-#
-# rnn_s = Generator.generate_rnn_simple(tuned_hp)
-#
-# checkpoint_path = model_path + "/cp-{epoch:04d}.ckpt"
-# cp_callback = tf.keras.callbacks.ModelCheckpoint(
-#     filepath=checkpoint_path,
-#     verbose=1,
-#     save_weights_only=True,
-#     save_freq='epoch',
-#     period=1
-# )
-#
-# ########################## simple RNN model training#############################
-# rnn_s.fit(x_train, y_train, epochs=5, batch_size=64, validation_split=0.10)
-# rnn_s.save(model_path + '/mysimpleRNN_bcrossentropy')
+tuner = kt.Hyperband(Generator.generate_rnn_simple,
+                     objective='val_accuracy', max_epochs=5, factor=2, directory=model_path,
+                     project_name='rnn_simple_hp')
 
-rnn_s = kr.load_model(model_path + '/mysimpleRNN_bcrossentropy');
+tuner.search(x_train, y_train, epochs=5, validation_split=0.10)
+
+tuned_hp = tuner.get_best_hyperparameters()[0]
+
+rnn_s = Generator.generate_rnn_simple(tuned_hp)
+
+checkpoint_path = model_path + "/cp-{epoch:04d}.ckpt"
+cp_callback = tf.keras.callbacks.ModelCheckpoint(
+    filepath=checkpoint_path,
+    verbose=1,
+    save_weights_only=True,
+    save_freq='epoch',
+    period=1
+)
+
+# ########################## simple RNN model training#############################
+rnn_s.fit(x_train, y_train, epochs=5, batch_size=64, validation_split=0.10)
+rnn_s.save(model_path + '/mysimpleRNN_bcrossentropy')
+
+# rnn_s = kr.load_model(model_path + '/mysimpleRNN_bcrossentropy');
 
 
 ##########################################Evaluation
