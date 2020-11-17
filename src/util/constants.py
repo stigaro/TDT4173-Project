@@ -36,3 +36,7 @@ RESULTS_PATH: str = os.path.join(RESOURCE_PATH, 'Results')
 LSTM_RESULTS_PATH: str = os.path.join(RESULTS_PATH, 'LSTM')
 LSTM_CHECKPOINT_PATH: str = os.path.join(LSTM_MODEL_PATH, 'Checkpoints')
 LSTM_FINAL_PATH: str = os.path.join(LSTM_MODEL_PATH, 'Saved')
+
+
+RNN_MODEL_PATH: str = os.path.join(MODELS_PATH, 'RNN')
+RNN_RESULTS_PATH: str = os.path.join(RESULTS_PATH, 'RNN')
