@@ -5,6 +5,10 @@ import kerastuner as kt
 import tensorflow as tf
 from src.util.generation import Generator
 
+os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
+physical_devices = tf.config.list_physical_devices('GPU')
+tf.config.experimental.set_memory_growth(physical_devices[0], enable=True)
+
 model_path = RNN_MODEL_PATH + '/Bidirect'
 results_path = RNN_RESULTS_PATH + '/Bidirect'
 

@@ -1,5 +1,9 @@
-PATH_TO_RAW_TEST_DATA: str = './Resources/Data/Raw/Corona_NLP_test.csv'
-PATH_TO_RAW_TRAIN_DATA: str = './Resources/Data/Raw/Corona_NLP_train.csv'
+import os
+ROOT_PATH: str = os.path.normpath(os.path.join(__file__, '../../..'))
+
+
+PATH_TO_RAW_TEST_DATA: str = ROOT_PATH + '/Resources/Data/Raw/Corona_NLP_test.csv'
+PATH_TO_RAW_TRAIN_DATA: str = ROOT_PATH + '/Resources/Data/Raw/Corona_NLP_train.csv'
 
 PATH_TO_MODEL_MLP_SAVE: str = './Resources/Models/MLP/Saved'
 PATH_TO_MODEL_GRU_SIMPLE_SAVE: str = './Resources/Models/GRU/Simple/Saved'
@@ -40,3 +44,5 @@ LSTM_FINAL_PATH: str = os.path.join(LSTM_MODEL_PATH, 'Saved')
 
 RNN_MODEL_PATH: str = os.path.join(MODELS_PATH, 'RNN')
 RNN_RESULTS_PATH: str = os.path.join(RESULTS_PATH, 'RNN')
+
+DATA_PATH_PREPROCESS: str = os.path.join(RESULTS_PATH, 'Preprocess')
