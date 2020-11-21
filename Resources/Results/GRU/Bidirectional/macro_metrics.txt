@@ -2,8 +2,8 @@
 |-------------------+-------------------|
 | sensitivity       |              0.72 |
 | specificity       |              0.93 |
-| precision         |              0.77 |
+| precision         |              0.78 |
 | accuracy          |              0.89 |
-| balanced-accuracy |              0.82 |
+| balanced-accuracy |              0.83 |
 | f1-score          |              0.74 |
-| mcc               |              0.67 |
+| mcc               |              0.68 |

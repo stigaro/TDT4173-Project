@@ -156,7 +156,7 @@ class Generator:
         hp_learning_rate = hyperparameters.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4, 1e-5])
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=hp_learning_rate),
-            loss=keras.losses.BinaryCrossentropy(from_logits=True),
+            loss=keras.losses.CategoricalCrossentropy(from_logits=True),
             metrics=['accuracy']
         )
 
@@ -201,7 +201,7 @@ class Generator:
         hp_learning_rate = hyperparameters.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4, 1e-5])
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=hp_learning_rate),
-            loss=keras.losses.BinaryCrossentropy(from_logits=True),
+            loss=keras.losses.CategoricalCrossentropy(from_logits=True),
             metrics=['accuracy']
         )
 

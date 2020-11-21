@@ -24,7 +24,7 @@ train_x, train_y, test_x, test_y = get_train_test_sets()
 tuner = kt.Hyperband(
     Generator.generate_mlp_model,
     objective='val_accuracy',
-    max_epochs=5,
+    max_epochs=10,
     factor=2,
     directory=PATH_TO_MODEL_MLP_HYPERPARAMETER,
     project_name=HYPER_PARAMETER_PROJECT_NAME

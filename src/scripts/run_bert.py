@@ -38,7 +38,7 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(
 )
 
 # Compile the model
-model.compile(loss=tf.keras.losses.BinaryCrossentropy(from_logits=True), optimizer=tf.keras.optimizers.Adam(learning_rate=2e-5), metrics=['accuracy'])
+model.compile(loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True), optimizer=tf.keras.optimizers.Adam(learning_rate=2e-5), metrics=['accuracy'])
 
 # Fit the model and save it
 model.fit(x=train_x.values(), y=train_y, epochs=5, batch_size=8, callbacks=[cp_callback], validation_split=0.10)
