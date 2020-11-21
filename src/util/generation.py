@@ -1,13 +1,8 @@
-import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout
 from tensorflow.python.keras.layers import SimpleRNN
-from keras.optimizers import Adam
-from transformers import TFBertForSequenceClassification
 
 from src.util.constants import MAXIMUM_SENTENCE_LENGTH, NUMBER_OF_WORDS, NUM_CLASSES
-import src.util.constants as CONST
-
 
 
 class Generator:
