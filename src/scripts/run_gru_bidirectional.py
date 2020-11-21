@@ -1,3 +1,4 @@
+import contextlib
 import os
 import numpy as np
 import tensorflow as tf
@@ -35,6 +36,11 @@ tuner.search(train_x, train_y, epochs=5, validation_split=0.10)
 # Get the optimal hyperparameters, and use those to create a model for training
 best_hyperparameters = tuner.get_best_hyperparameters()[0]
 model = Generator.generate_bidirectional_gru_model(best_hyperparameters)
+
+# Save model summary to file
+with open(PATH_TO_RESULT_GRU_BIDIRECTIONAL + '/' + 'model_summary.txt', 'w') as file:
+    with contextlib.redirect_stdout(file):
+        model.summary()
 
 # Create a callback that saves the model's weights every epoch
 checkpoint_path = PATH_TO_MODEL_GRU_BIDIRECTIONAL_CHECKPOINTS + "/cp-{epoch:04d}.ckpt"

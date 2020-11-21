@@ -1,3 +1,4 @@
+import contextlib
 import os
 import numpy as np
 import tensorflow as tf
@@ -26,6 +27,11 @@ test_y = np.asarray(test_y).astype('float32').reshape((-1, 5))
 
 # Loads pre trained BERT model for sequence classification
 model = TFBertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=5, output_attentions=False, output_hidden_states=False)
+
+# Save model summary to file
+with open(PATH_TO_RESULT_TRANSFORMER_BERT + '/' + 'model_summary.txt', 'w') as file:
+    with contextlib.redirect_stdout(file):
+        model.summary()
 
 # Create a callback that saves the model's weights every 5 epochs
 checkpoint_path = PATH_TO_MODEL_TRANSFORMER_BERT_CHECKPOINTS + "/cp-{epoch:04d}.ckpt"

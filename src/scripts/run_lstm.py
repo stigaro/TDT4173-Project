@@ -1,3 +1,4 @@
+import contextlib
 import os
 import numpy as np
 import tensorflow as tf
@@ -33,6 +34,11 @@ tuner.search(x_train, y_train, epochs=5, validation_split=0.10)
 # Get the optimal hyperparameters, and use those to create a model for training
 best_params = tuner.get_best_hyperparameters()[0]
 model = Generator.generate_lstm_model(best_params)
+
+# Save model summary to file
+with open(CONST.LSTM_RESULTS_PATH + '/' + 'model_summary.txt', 'w') as file:
+    with contextlib.redirect_stdout(file):
+        model.summary()
 
 # Create a callback that saves the model's weights every epoch
 os.makedirs(CONST.LSTM_CHECKPOINT_PATH, exist_ok=True)

@@ -1,3 +1,4 @@
+import contextlib
 import os
 import pandas as pd
 import numpy as np
@@ -24,7 +25,7 @@ train_x, train_y, test_x, test_y = get_train_test_sets()
 tuner = kt.Hyperband(
     Generator.generate_mlp_model,
     objective='val_accuracy',
-    max_epochs=10,
+    max_epochs=5,
     factor=2,
     directory=PATH_TO_MODEL_MLP_HYPERPARAMETER,
     project_name=HYPER_PARAMETER_PROJECT_NAME
@@ -35,7 +36,12 @@ tuner.search(train_x, train_y, epochs=5, validation_split=0.10)
 
 # Get the optimal hyperparameters, and use those to create a model for training
 best_hyperparameters = tuner.get_best_hyperparameters()[0]
-model = Generator.generate_simple_gru_model(best_hyperparameters)
+model = Generator.generate_mlp_model(best_hyperparameters)
+
+# Save model summary to file
+with open(PATH_TO_RESULT_MLP + '/' + 'model_summary.txt', 'w') as file:
+    with contextlib.redirect_stdout(file):
+        model.summary()
 
 # Create a callback that saves the model's weights every epoch
 checkpoint_path = PATH_TO_MODEL_MLP_CHECKPOINTS + "/cp-{epoch:04d}.ckpt"
