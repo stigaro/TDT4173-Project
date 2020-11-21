@@ -1,3 +1,14 @@
+#######################################################################################################################
+
+# This script performs the visualization and description for data to observe different features of the dataset.
+
+# The data is read in the form of test train sets and the hyper tuner tunes the model training for different parameters
+# defined in 'generation.py' script. The best hyper parameters are saved and used to train the model.
+
+# The results are extracted and saved for the tuned model of simple RNN architecture.
+
+#######################################################################################################################
+
 import plotly.graph_objects as go
 import plotly.express as px
 import re
@@ -8,7 +19,7 @@ from collections import Counter
 import matplotlib.pyplot as plt
 
 
-
+# function for reading the raw data
 def read_data(): # read train and test data
     train = pd.read_csv(DATA_PATH + '/Raw/Corona_NLP_train.csv', encoding='latin1')
     test = pd.read_csv(DATA_PATH + '/Raw/Corona_NLP_test.csv', encoding='latin1')
@@ -17,6 +28,7 @@ def read_data(): # read train and test data
     df['OriginalTweet'] = df['OriginalTweet'].astype(str)
     return df
 
+# function for finding the most commonly used words in the tweets
 def common_words(t, max_w): #generate wordmaps of common words in tweets
 
     # com_words = ''
@@ -40,6 +52,7 @@ def common_words(t, max_w): #generate wordmaps of common words in tweets
     plt.savefig(DATA_PATH_PREPROCESS + '/' + 'common_words.png')
 
 
+# function for visualizing different sentiment labels and their occurrence frequency
 def sentiment_viz(d): # visualization of the sentiment classes
     df_dist = d['Sentiment'].value_counts()
     fig = go.Figure([go.Bar(x = df_dist.index, y = df_dist.values)]);
@@ -47,14 +60,17 @@ def sentiment_viz(d): # visualization of the sentiment classes
     fig.show();
 
 
+# function for finding different hashtags and their occurrence frequency
 def hashtags(seq):
     line=re.findall(r'(?<=#)\w+',seq)
     return " ".join(line)
 
+# function for finding different mentions and their occurrence frequency
 def get_mentions(s):
     mentions = re.findall("(?<![@\w])@(\w{1,25})", s)
     return " ".join(mentions)
 
+# function for visualizing different mentions and their occurrence frequency
 def mentions_viz(df):
     df['mentions'] = df['OriginalTweet'].apply(lambda x: get_mentions(x))
     allMentions = list(df[(df['mentions'] != None) & (df['mentions'] != "")]['mentions'])
@@ -74,7 +90,7 @@ def mentions_viz(df):
     fig.update_layout(width=800, showlegend=False, xaxis_title="Word", yaxis_title="Count")
     fig.show()
 
-
+# function for visualizing different hashtags and their occurrence frequency
 def hashtag_viz(d): # Hashtag visualization
     d['hash'] = d['OriginalTweet'].apply(lambda x:hashtags(x));
     fig = px.bar(d['hash'].value_counts()[1:20], orientation="v", color=d['hash'].value_counts()[1:20],
@@ -90,21 +106,20 @@ def hashtag_viz(d): # Hashtag visualization
 # read data
 data = read_data()
 
-# data = data[data["Sentiment"]=="Positive"]['OriginalTweet']
+# find and save the most common words in the tweets
 common_words(data,50)
 
-#
-#
+
 # data structure
 print(data.groupby('Sentiment').describe(include=['O']).T)
 
 
-# sentiment visualization
+# find and save the most common sentiments in the tweets
 sentiment_viz(data)
 
-# hashtag visualization
+# find and save the most common hashtags in the tweets
 hashtag_viz(data)
 
-#mentions visualization
+# find and save the most common mentions in the tweets
 mentions_viz(data)
 

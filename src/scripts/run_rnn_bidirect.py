@@ -1,3 +1,14 @@
+#######################################################################################################################
+
+# This script performs the training for a Bidirectional RNN architecture and cross validates it using kerastunner.
+
+# The data is read in the form of test train sets and the hyper tuner tunes the model training for different parameters
+# defined in 'generation.py' script. The best hyper parameters are saved and used to train the model.
+
+# The results are extracted and saved for the tuned model of Bidirectional RNN architecture.
+
+#######################################################################################################################
+
 from src.util.data import get_train_test_sets
 from src.util.extraction import ResultsExtractor
 from src.util.constants import *
