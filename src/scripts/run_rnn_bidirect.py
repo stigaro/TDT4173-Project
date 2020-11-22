@@ -1,13 +1,4 @@
-#######################################################################################################################
-
-# This script performs the training for a Bidirectional RNN architecture and cross validates it using kerastunner.
-
-# The data is read in the form of test train sets and the hyper tuner tunes the model training for different parameters
-# defined in 'generation.py' script. The best hyper parameters are saved and used to train the model.
-
-# The results are extracted and saved for the tuned model of Bidirectional RNN architecture.
-
-#######################################################################################################################
+import contextlib
 
 from src.util.data import get_train_test_sets
 from src.util.extraction import ResultsExtractor
@@ -23,8 +14,7 @@ tf.config.experimental.set_memory_growth(physical_devices[0], enable=True)
 model_path = RNN_MODEL_PATH + '/Bidirect'
 results_path = RNN_RESULTS_PATH + '/Bidirect'
 
-
-#load data
+# load data
 x_train, y_train, x_test, y_test = get_train_test_sets()
 
 ###########################################Hyper Parameter tuning
@@ -37,6 +27,11 @@ tuner.search(x_train, y_train, epochs=5, validation_split=0.10)
 tuned_hp = tuner.get_best_hyperparameters()[0]
 
 rnn_b = Generator.generate_rnn_bidirect(tuned_hp)
+
+# Save model summary to file
+with open(results_path + '/' + 'model_summary.txt', 'w') as file:
+    with contextlib.redirect_stdout(file):
+        rnn_b.summary()
 
 checkpoint_path = model_path + "/cp-{epoch:04d}.ckpt"
 cp_callback = tf.keras.callbacks.ModelCheckpoint(

@@ -1,60 +1,21 @@
-# Sentiment Analysis on Covid19 twitter dataset
-Repository for the TDT4173-Project (Machine Learning)
------------------------------------------------------------ 
-1- Structure
+# TDT4173-Project  
+Repository for the machine learning project  
++ To run the code one should first extract the supplied 'Resources' folder into the 'TDT4173' <br>
+(This ensures that the folder structure is maintained)
 
-The project has been divided into Resources and src folders.
++ All runnable code is found in 'src/scripts', everything else is modules made for preprocessing/loading/etc.
+These runnable files will do the following:<br>
+-> Load the preprocessed data<br>
+-> Perform hyperparameter search if necessary<br>
+-> Train with the best hyperparameters<br>
+-> Save the model and extract results<br>
 
-- Resources contain the Data, Trained Models, Notebooks and Results.
++ All models and their results will be stored in the supplied 'Resources' folder <br>
+(It should already contain everything as the experiments have already been ran)
 
-- src has the scripts for running the model training and evaluation.
-It also contains the utility functions for data loading, pre-processing
-visualization and helper functions.
++ We have mainly used PyCharm for development, which lets users auto import libraries from 'REQUIREMENTS.txt'.
+If you are using a different IDE you might need to set the project working directory correctly before pathing will work.
+We have added some code so that this might not be needed, but if you experience path errors check this first.
 
-2- Experiments
-
-The following scripts can be used to train models for different methods:
-
-- 'lstm' and 'lstm_hypersearch' for LSTM
-
-- 'run_rnn_simple' and 'run_rnn_bidirect' for RNN
-
-- 'run_gru_simple' and 'run_gru_bidirectional' for GRU
-
-- 'run_mlp' for MLP
-
-- 'run_bert' for BERT
-
-3- Utilities
-
-The following scripts are utilized for defining th require utility functions:
-
-- 'constants' for declaring commonly used constant variables like root directory
-
-- 'data' for pre processing and reading the dataset
-
-- 'data_viz' for pre processing and data description visualizations
-
-- 'extraction' for performance evaluation metrics extraction from the trained models
-
-- 'generation' for building models for different sequential and baseline methods
-
-- 'loading' for data extraction and pre processing from the dataset
-
-- 'normalizers' for data cleaning and normalization operations on loaded data
-
-- 'tokenizers' for tokenization operations during the data cleaning
-
-- 'util' for different miscellaneous utility functions
-
-- 'vectorizers' for different vectorization operations on data
-
-
-
-
-
-
-
-
-
-
++ Hyperparameter search happens if no 'hyperparameter_search' folder is found in the specific model 'Resources/Models/...' path.
+Since these should already exist the runnable codes will simply run the existing best hyperparameters.

@@ -1,13 +1,5 @@
-#######################################################################################################################
+import contextlib
 
-# This script performs the training for a simple RNN architecture and cross validates it using kerastunner.
-
-# The data is read in the form of test train sets and the hyper tuner tunes the model training for different parameters
-# defined in 'generation.py' script. The best hyper parameters are saved and used to train the model.
-
-# The results are extracted and saved for the tuned model of simple RNN architecture.
-
-#######################################################################################################################
 from src.util.data import get_train_test_sets
 from src.util.extraction import ResultsExtractor
 
@@ -16,19 +8,14 @@ import kerastuner as kt
 import tensorflow as tf
 from src.util.constants import *
 
-# enable gpu processing for the tuning and training
 os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], enable=True)
 
-# set default paths using 'constants.py' definitions for the script
 model_path = RNN_MODEL_PATH + '/Simple'
 results_path = RNN_RESULTS_PATH + '/Simple'
 
-
-#  get train and test sets for training
 x_train, y_train, x_test, y_test = get_train_test_sets()
-
 
 ###########################################Hyperparameter Tuning
 tuner = kt.Hyperband(Generator.generate_rnn_simple,
@@ -40,6 +27,11 @@ tuner.search(x_train, y_train, epochs=5, validation_split=0.10)
 tuned_hp = tuner.get_best_hyperparameters()[0]
 
 rnn_s = Generator.generate_rnn_simple(tuned_hp)
+
+# Save model summary to file
+with open(results_path + '/' + 'model_summary.txt', 'w') as file:
+    with contextlib.redirect_stdout(file):
+        rnn_s.summary()
 
 checkpoint_path = model_path + "/cp-{epoch:04d}.ckpt"
 cp_callback = tf.keras.callbacks.ModelCheckpoint(

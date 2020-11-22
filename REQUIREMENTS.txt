@@ -1,10 +1,3 @@
----- TO BE DONE ----
-(Requirements needed to run the code)
-	+ Python libraries for example
-	+ Python version for example
-	+ Etc...
----- TO BE DONE ----
-
 * Working directory is assumed to be the project folder 'TDT4173-Project'
 * Libraries used:
     numpy~=1.18.5
@@ -18,10 +11,12 @@
     matplotlib~=3.3.2
     cycler~=0.10.0
     tabulate~=0.8.7
-    pytest
+    pytest~=6.1.2
     transformers~=3.4.0
-    ekphrasis
+    ekphrasis~=0.5.1
     tweet-preprocessor
     seaborn~=0.11.0
-    pycontractions
-    wordcloud
+    pycontractions~=2.0.1
+    wordcloud~=1.8.1
+    preprocessor~=1.1.3
+    kerastuner
