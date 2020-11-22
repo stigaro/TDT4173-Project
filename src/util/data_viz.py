@@ -2,11 +2,6 @@
 
 # This script performs the visualization and description for data to observe different features of the dataset.
 
-# The data is read in the form of test train sets and the hyper tuner tunes the model training for different parameters
-# defined in 'generation.py' script. The best hyper parameters are saved and used to train the model.
-
-# The results are extracted and saved for the tuned model of simple RNN architecture.
-
 #######################################################################################################################
 
 import plotly.graph_objects as go

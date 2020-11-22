@@ -1,5 +1,5 @@
-embedding_dimension: 8.00000
-rnn_units: 120.00000
-dropout_rate1: 0.20000
+embedding_dimension: 16.00000
+rnn_units: 144.00000
+dropout_rate1: 0.40000
 dropout_rate2: 0.00000
-learning_rate: 0.00100
+learning_rate: 0.01000

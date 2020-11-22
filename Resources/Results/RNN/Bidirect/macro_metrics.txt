@@ -1,9 +1,9 @@
 | Metric            |   Macro-Averaging |
 |-------------------+-------------------|
-| sensitivity       |              0.24 |
-| specificity       |              0.81 |
-| precision         |              0.38 |
-| accuracy          |              0.71 |
-| balanced-accuracy |              0.52 |
-| f1-score          |              0.20 |
-| mcc               |              0.09 |
+| sensitivity       |              0.30 |
+| specificity       |              0.83 |
+| precision         |              0.36 |
+| accuracy          |              0.74 |
+| balanced-accuracy |              0.57 |
+| f1-score          |              0.29 |
+| mcc               |              0.15 |
