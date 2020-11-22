@@ -1,13 +1,8 @@
-import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout
 from tensorflow.python.keras.layers import SimpleRNN
-from keras.optimizers import Adam
-from transformers import TFBertForSequenceClassification
 
 from src.util.constants import MAXIMUM_SENTENCE_LENGTH, NUMBER_OF_WORDS, NUM_CLASSES
-import src.util.constants as CONST
-
 
 
 class Generator:
@@ -156,7 +151,7 @@ class Generator:
         hp_learning_rate = hyperparameters.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4, 1e-5])
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=hp_learning_rate),
-            loss=keras.losses.BinaryCrossentropy(from_logits=True),
+            loss=keras.losses.CategoricalCrossentropy(from_logits=True),
             metrics=['accuracy']
         )
 
@@ -201,7 +196,7 @@ class Generator:
         hp_learning_rate = hyperparameters.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4, 1e-5])
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=hp_learning_rate),
-            loss=keras.losses.BinaryCrossentropy(from_logits=True),
+            loss=keras.losses.CategoricalCrossentropy(from_logits=True),
             metrics=['accuracy']
         )
 

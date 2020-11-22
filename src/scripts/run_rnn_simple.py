@@ -1,3 +1,5 @@
+import contextlib
+
 from src.util.data import get_train_test_sets
 from src.util.extraction import ResultsExtractor
 
@@ -15,7 +17,6 @@ results_path = RNN_RESULTS_PATH + '/Simple'
 
 x_train, y_train, x_test, y_test = get_train_test_sets()
 
-
 ###########################################Hyperparameter Tuning
 tuner = kt.Hyperband(Generator.generate_rnn_simple,
                      objective='val_accuracy', max_epochs=5, factor=2, directory=model_path,
@@ -26,6 +27,11 @@ tuner.search(x_train, y_train, epochs=5, validation_split=0.10)
 tuned_hp = tuner.get_best_hyperparameters()[0]
 
 rnn_s = Generator.generate_rnn_simple(tuned_hp)
+
+# Save model summary to file
+with open(results_path + '/' + 'model_summary.txt', 'w') as file:
+    with contextlib.redirect_stdout(file):
+        rnn_s.summary()
 
 checkpoint_path = model_path + "/cp-{epoch:04d}.ckpt"
 cp_callback = tf.keras.callbacks.ModelCheckpoint(
